@@ -24,6 +24,8 @@ SOFTWARE.*/
 
 #include <DX3D/Input/InputSystem.h>
 #include <ranges>
+#include <algorithm>
+#include <utility>
 #include <Windows.h>
 
 dx3d::InputSystem::InputSystem(const InputSystemDesc& desc) : Base(desc.base)
@@ -47,7 +49,6 @@ bool dx3d::InputSystem::isKeyReleased(KeyCode key) const
 		m_previousKeys[static_cast<std::size_t>(key)];
 }
 
-
 dx3d::Vec2 dx3d::InputSystem::getMousePosition() const noexcept
 {
 	return m_mousePosition;
@@ -58,6 +59,10 @@ dx3d::Vec2 dx3d::InputSystem::getMouseDelta() const noexcept
 	return m_mouseDelta;
 }
 
+bool dx3d::InputSystem::isCursorLocked() const noexcept
+{
+	return m_cursorLocked;
+}
 
 void dx3d::InputSystem::setCursorVisible(bool visible)
 {
@@ -78,6 +83,30 @@ void  dx3d::InputSystem::setCursorLockArea(const Rect& rect)
 	m_lockArea = rect;
 }
 
+void dx3d::InputSystem::registerListener(InputListener& listener)
+{
+	if (std::find(m_listeners.begin(), m_listeners.end(), &listener) != m_listeners.end())
+		return;
+
+	m_listeners.push_back(&listener);
+}
+
+void dx3d::InputSystem::unregisterListener(InputListener& listener)
+{
+	std::erase(m_listeners, &listener);
+}
+
+void dx3d::InputSystem::bindCommand(KeyCode key, InputTrigger trigger, UniquePtr<InputCommand> command)
+{
+	if (!command) return;
+	m_commandBindings.push_back(CommandBinding{ key, trigger, std::move(command) });
+}
+
+void dx3d::InputSystem::clearCommands()
+{
+	m_commandBindings.clear();
+}
+
 void dx3d::InputSystem::centerCursor()
 {
 	const auto centerX = m_lockArea.left + (m_lockArea.width / 2);
@@ -89,15 +118,56 @@ void dx3d::InputSystem::centerCursor()
 	m_mousePosition.y = static_cast<f32>(centerY);
 }
 
-void dx3d::InputSystem::update()
+void dx3d::InputSystem::update(f32 deltaTime)
 {
 	m_previousKeys = m_currentKeys;
 
-	for (auto i: std::views::iota(0u,static_cast<std::size_t>(KeyCode::Count)))
+	for (auto i : std::views::iota(0u, static_cast<std::size_t>(KeyCode::Count)))
 	{
 		const auto vk = getInternalKeyCode(static_cast<KeyCode>(i));
 		m_currentKeys[i] = (GetAsyncKeyState(vk) & 0x8000) != 0;
 	}
+
+	auto notifyKeyPressed = [this](KeyCode key)
+	{
+		const auto listeners = m_listeners;
+		for (auto* listener : listeners)
+		{
+			if (listener) listener->onKeyPressed(key);
+		}
+	};
+
+	auto notifyKeyReleased = [this](KeyCode key)
+	{
+		const auto listeners = m_listeners;
+		for (auto* listener : listeners)
+		{
+			if (listener) listener->onKeyReleased(key);
+		}
+	};
+
+	auto notifyMouseMoved = [this](const Vec2& position, const Vec2& delta)
+	{
+		const auto listeners = m_listeners;
+		for (auto* listener : listeners)
+		{
+			if (listener) listener->onMouseMoved(position, delta);
+		}
+	};
+
+	auto executeCommands = [this, deltaTime](KeyCode key, InputTrigger trigger)
+	{
+		for (auto& binding : m_commandBindings)
+		{
+			if (!binding.command) continue;
+			if (binding.trigger != trigger) continue;
+
+			if (trigger != InputTrigger::MouseMoved && binding.key != key)
+				continue;
+
+			binding.command->execute(deltaTime);
+		}
+	};
 
 	m_previousMousePosition = m_mousePosition;
 
@@ -109,6 +179,34 @@ void dx3d::InputSystem::update()
 
 	m_mouseDelta.x = m_mousePosition.x - m_previousMousePosition.x;
 	m_mouseDelta.y = m_mousePosition.y - m_previousMousePosition.y;
+
+	for (auto i : std::views::iota(0u, static_cast<std::size_t>(KeyCode::Count)))
+	{
+		const auto key = static_cast<KeyCode>(i);
+
+		if (m_currentKeys[i] && !m_previousKeys[i])
+		{
+			notifyKeyPressed(key);
+			executeCommands(key, InputTrigger::Pressed);
+		}
+
+		if (m_currentKeys[i])
+		{
+			executeCommands(key, InputTrigger::Held);
+		}
+
+		if (!m_currentKeys[i] && m_previousKeys[i])
+		{
+			notifyKeyReleased(key);
+			executeCommands(key, InputTrigger::Released);
+		}
+	}
+
+	if (m_mouseDelta.x != 0.0f || m_mouseDelta.y != 0.0f)
+	{
+		notifyMouseMoved(m_mousePosition, m_mouseDelta);
+		executeCommands(KeyCode::Unknown, InputTrigger::MouseMoved);
+	}
 
 	if (m_cursorLocked) centerCursor();
 }

@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <ranges>
 
 
-dx3d::WorldRenderer::WorldRenderer(const WorldRendererDesc& desc): Base(desc.base), m_graphicsDevice(desc.engine)
+dx3d::WorldRenderer::WorldRenderer(const WorldRendererDesc& desc) : Base(desc.base), m_graphicsDevice(desc.engine)
 {
 	auto& device = m_graphicsDevice;
 	m_deviceContext = device.createDeviceContext();
@@ -58,8 +58,8 @@ dx3d::WorldRenderer::WorldRenderer(const WorldRendererDesc& desc): Base(desc.bas
 	auto shaderSourceCode = shaderFileData.c_str();
 	auto shaderSourceCodeSize = shaderFileData.length();
 
-	auto vs = device.compileShader({shaderFilePath, shaderSourceCode, shaderSourceCodeSize,
-		"VSMain", ShaderType::VertexShader});
+	auto vs = device.compileShader({ shaderFilePath, shaderSourceCode, shaderSourceCodeSize,
+		"VSMain", ShaderType::VertexShader });
 	auto ps = device.compileShader({ shaderFilePath, shaderSourceCode, shaderSourceCodeSize,
 		"PSMain", ShaderType::PixelShader });
 	auto vsSig = device.createVertexShaderSignature({ vs });
@@ -81,8 +81,8 @@ dx3d::WorldRenderer::WorldRenderer(const WorldRendererDesc& desc): Base(desc.bas
 
 	const ui32 indexList[] =
 	{
-		0,1,2,  
-		2,3,0,  
+		0,1,2,
+		2,3,0,
 
 		4,5,6,
 		6,7,4,
@@ -100,9 +100,9 @@ dx3d::WorldRenderer::WorldRenderer(const WorldRendererDesc& desc): Base(desc.bas
 		1,0,7
 	};
 
-	m_vb = device.createVertexBuffer({vertexList, std::size(vertexList), sizeof(Vertex)});
+	m_vb = device.createVertexBuffer({ vertexList, std::size(vertexList), sizeof(Vertex) });
 	m_cb = device.createConstantBuffer({ {}, sizeof(ConstantData) });
-	m_ib = device.createIndexBuffer({indexList, std::size(indexList)});
+	m_ib = device.createIndexBuffer({ indexList, std::size(indexList) });
 }
 
 dx3d::WorldRenderer::~WorldRenderer()

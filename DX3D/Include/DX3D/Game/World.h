@@ -40,10 +40,10 @@ namespace dx3d
 		template <typename T>
 		T* createGameObject() requires IsRegistered<GameObject, T>
 		{
-			UniquePtr<GameObject> e = std::make_unique<T>(GameObjectDesc{ 
+			UniquePtr<GameObject> e = std::make_unique<T>(GameObjectDesc{
 				{m_logger},
 				m_gameContext,
-				*this 
+				*this
 				});
 			return static_cast<T*>(createGameObjectInternal(e));
 		}
@@ -73,7 +73,7 @@ namespace dx3d
 			EventType eventType{};
 		};
 
-	private:	
+	private:
 		GameContext m_gameContext;
 
 		std::unordered_map<size_t, std::vector<UniquePtr<GameObject>>> m_objects{};

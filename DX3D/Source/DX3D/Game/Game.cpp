@@ -79,7 +79,7 @@ void dx3d::Game::onInternalUpdate()
 	m_previousTime = currentTime;
 	auto deltaTime = delta.count();
 
-	m_inputSystem->update();
+	m_inputSystem->update(deltaTime);
 
 	onUpdate(deltaTime);
 

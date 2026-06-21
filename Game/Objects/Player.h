@@ -1,4 +1,4 @@
-/*MIT License
+	/*MIT License
 
 C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
 
@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include <DX3D/All.h>
 
 
-class Player : public dx3d::GameObject
+class Player : public dx3d::GameObject, public dx3d::InputListener
 {
 	dx3d_typeid(Player)
 public:
@@ -35,9 +35,9 @@ public:
 protected:
 	virtual void onCreate();
 	virtual void onUpdate(dx3d::f32 deltaTime);
+	virtual void onKeyPressed(dx3d::KeyCode key) override;
 
 private:
-
-	GameObject* m_cam{};
+	bool m_cursorLocked{ true };
 };
 

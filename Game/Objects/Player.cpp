@@ -1,28 +1,79 @@
-/*MIT License
-
-C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
-
-Copyright (c) 2019-2026, PardCode
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.*/
-
 #include "Player.h"
+#include <Windows.h>
+
+namespace
+{
+	class MoveCommand final : public dx3d::InputCommand
+	{
+	public:
+		MoveCommand(Player& player, const dx3d::Vec3& direction, dx3d::f32 speed) :
+			m_player(player),
+			m_direction(direction),
+			m_speed(speed)
+		{
+		}
+
+		virtual void execute(dx3d::f32 deltaTime) override
+		{
+			auto& transform = m_player.getTransform();
+			auto movement = transform.forward() * m_direction.z +
+				transform.right() * m_direction.x;
+
+			if (movement.x == 0.0f && movement.y == 0.0f && movement.z == 0.0f)
+				return;
+
+			auto position = transform.getPosition();
+			position += dx3d::Vec3::normalize(movement) * (m_speed * deltaTime);
+			transform.setPosition(position);
+		}
+
+	private:
+		Player& m_player;
+		dx3d::Vec3 m_direction{};
+		dx3d::f32 m_speed{};
+	};
+
+	class LookCommand final : public dx3d::InputCommand
+	{
+	public:
+		LookCommand(Player& player, dx3d::f32 sensitivity) :
+			m_player(player),
+			m_sensitivity(sensitivity)
+		{
+		}
+
+		virtual void execute(dx3d::f32) override
+		{
+			auto& input = m_player.getInputSystem();
+			if (!input.isCursorLocked())
+				return;
+
+			auto delta = input.getMouseDelta();
+			auto rotation = m_player.getTransform().getRotation();
+
+			rotation.x += delta.y * m_sensitivity;
+			rotation.y += delta.x * m_sensitivity;
+
+			if (rotation.x > 1.57f) rotation.x = 1.57f;
+			else if (rotation.x < -1.57f) rotation.x = -1.57f;
+
+			m_player.getTransform().setRotation(rotation);
+		}
+
+	private:
+		Player& m_player;
+		dx3d::f32 m_sensitivity{};
+	};
+
+	class QuitCommand final : public dx3d::InputCommand
+	{
+	public:
+		void execute(dx3d::f32) override
+		{
+			PostQuitMessage(0);
+		}
+	};
+}
 
 Player::Player(const dx3d::GameObjectDesc& desc) : dx3d::GameObject(desc)
 {
@@ -30,38 +81,52 @@ Player::Player(const dx3d::GameObjectDesc& desc) : dx3d::GameObject(desc)
 
 Player::~Player()
 {
+	auto& input = getInputSystem();
+	input.unregisterListener(*this);
+	input.clearCommands();
 }
 
 void Player::onCreate()
 {
-	createOrGetComponent<dx3d::CameraComponent>();
+	auto camera = createOrGetComponent<dx3d::CameraComponent>();
+	camera->setNearPlane(0.05f);
+	camera->setFarPlane(250.0f);
+	camera->setFieldOfView(1.1f);
+
+	auto& input = getInputSystem();
+	input.registerListener(*this);
+
+	input.bindCommand(dx3d::KeyCode::W, dx3d::InputTrigger::Held,
+		std::make_unique<MoveCommand>(*this, dx3d::Vec3{ 0.0f, 0.0f, 1.0f }, 3.0f));
+
+	input.bindCommand(dx3d::KeyCode::S, dx3d::InputTrigger::Held,
+		std::make_unique<MoveCommand>(*this, dx3d::Vec3{ 0.0f, 0.0f, -1.0f }, 3.0f));
+
+	input.bindCommand(dx3d::KeyCode::D, dx3d::InputTrigger::Held,
+		std::make_unique<MoveCommand>(*this, dx3d::Vec3{ 1.0f, 0.0f, 0.0f }, 3.0f));
+
+	input.bindCommand(dx3d::KeyCode::A, dx3d::InputTrigger::Held,
+		std::make_unique<MoveCommand>(*this, dx3d::Vec3{ -1.0f, 0.0f, 0.0f }, 3.0f));
+
+	input.bindCommand(dx3d::KeyCode::Unknown, dx3d::InputTrigger::MouseMoved,
+		std::make_unique<LookCommand>(*this, 0.001f));
+
+	input.bindCommand(dx3d::KeyCode::Escape, dx3d::InputTrigger::Pressed,
+		std::make_unique<QuitCommand>());
 }
 
 void Player::onUpdate(dx3d::f32 deltaTime)
 {
+	GameObject::onUpdate(deltaTime);
+}
+
+void Player::onKeyPressed(dx3d::KeyCode key)
+{
+	if (key != dx3d::KeyCode::Escape)
+		return;
+
+	m_cursorLocked = !m_cursorLocked;
 	auto& input = getInputSystem();
-
-
-	auto sensitivity = 0.001f;
-	auto rot = getTransform().getRotation();
-	rot.x += getInputSystem().getMouseDelta().y * sensitivity;
-	rot.y += getInputSystem().getMouseDelta().x * sensitivity;
-	if (rot.x > 1.57f) rot.x = 1.57f;
-	else if (rot.x < -1.57f) rot.x = -1.57f;
-	getTransform().setRotation(rot);
-
-
-	auto pos = getTransform().getPosition();
-	auto forward = 0.0f;
-	auto right = 0.0f;
-	auto speed = 3.0f;
-	if (getInputSystem().isKeyDown(dx3d::KeyCode::W)) forward = 1.0f;
-	if (getInputSystem().isKeyDown(dx3d::KeyCode::S)) forward = -1.0f;
-	if (getInputSystem().isKeyDown(dx3d::KeyCode::D)) right = 1.0f;
-	if (getInputSystem().isKeyDown(dx3d::KeyCode::A)) right = -1.0f;
-	auto forwardDir = getTransform().forward() * forward;
-	auto rightDir = getTransform().right() * right;
-	auto direction = dx3d::Vec3::normalize(forwardDir + rightDir);
-	pos = pos + direction * speed * deltaTime;
-	getTransform().setPosition(pos);
+	input.setCursorLocked(m_cursorLocked);
+	input.setCursorVisible(!m_cursorLocked);
 }

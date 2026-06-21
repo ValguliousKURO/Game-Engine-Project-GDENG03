@@ -138,6 +138,8 @@
   <ItemGroup>
     <ClCompile Include="DX3D\Source\DX3D\Component\CameraComponent.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Component\CubeComponent.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Component\PlaneComponent.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Component\SphereComponent.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Component\TransformComponent.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Game\Component.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Game\WorldRenderer.cpp" />
@@ -166,6 +168,8 @@
   <ItemGroup>
     <ClInclude Include="DX3D\Include\DX3D\Component\CameraComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\CubeComponent.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Component\PlaneComponent.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Component\SphereComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\TransformComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Core\Identifiable.h" />
     <ClInclude Include="DX3D\Include\DX3D\Game\Component.h" />

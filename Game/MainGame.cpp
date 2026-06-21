@@ -35,33 +35,29 @@ void MainGame::onCreate()
 	Game::onCreate();
 	auto& world = getWorld();
 
-	auto floor = world.createGameObject<dx3d::GameObject>();
-	floor->createOrGetComponent<dx3d::CubeComponent>();
-	floor->getTransform().setScale({ 6.8f, 0.1f, 6.8f });
-	floor->getTransform().setPosition({ 0, -1, 0 });
+	m_plane = world.createGameObject<dx3d::GameObject>();
+	m_plane->createOrGetComponent<dx3d::CubeComponent>();
+	m_plane->getTransform().setScale({ 10.0f, 0.1f, 10.0f });
+	m_plane->getTransform().setPosition({ 0.0f, -1.0f, 0.0f });
 
+	m_cubeLeft = world.createGameObject<dx3d::GameObject>();
+	m_cubeLeft->createOrGetComponent<dx3d::CubeComponent>();
+	m_cubeLeft->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
+	m_cubeLeft->getTransform().setPosition({ -2.0f, 0.0f, 3.0f });
 
-	srand((unsigned int)time(NULL));
+	m_cubeRight = world.createGameObject<dx3d::GameObject>();
+	m_cubeRight->createOrGetComponent<dx3d::CubeComponent>();
+	m_cubeRight->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
+	m_cubeRight->getTransform().setPosition({ 2.0f, 0.0f, 3.0f });
 
-	for (auto y = -2; y < 3; y++)
-	{
-		for (auto x = -2; x < 3; x++)
-		{
-			auto cube = world.createGameObject<dx3d::GameObject>();
-			cube->createOrGetComponent<dx3d::CubeComponent>();
-			auto height = (rand() % 120) + (80.0f);
-			height /= 100.0f;
+	m_sphere = world.createGameObject<dx3d::GameObject>();
+	m_sphere->createOrGetComponent<dx3d::CubeComponent>();
+	m_sphere->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
+	m_sphere->getTransform().setPosition({ 0.0f, 1.0f, 6.0f });
 
-			auto width = (rand() % 600) + (200.0f);
-			width /= 1000.0f;
-
-			cube->getTransform().setScale({ width, height, width });
-			cube->getTransform().setPosition({ x * 1.4f, (height / 2.0f) - 1.0f, y * 1.4f });
-		}
-	}
-
-	auto player = world.createGameObject<Player>();
-	player->getTransform().setPosition({ 0, 1, -2});
+	m_player = world.createGameObject<Player>();
+	m_player->getTransform().setPosition({ 0.0f, 1.5f, -7.0f });
+	m_player->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
 
 	getInputSystem().setCursorLocked(true);
 	getInputSystem().setCursorVisible(false);

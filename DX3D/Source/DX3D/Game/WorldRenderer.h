@@ -31,7 +31,7 @@ SOFTWARE.*/
 
 namespace dx3d
 {
-	class WorldRenderer final: public Base
+	class WorldRenderer final : public Base
 	{
 	public:
 		explicit WorldRenderer(const WorldRendererDesc& desc);

@@ -37,6 +37,9 @@ protected:
 
 private:
 	dx3d::GameObject* m_player{};
-	dx3d::f32 m_rot{}, m_scale{};
+	dx3d::GameObject* m_plane{};
+	dx3d::GameObject* m_cubeLeft{};
+	dx3d::GameObject* m_cubeRight{};
+	dx3d::GameObject* m_sphere{};
 };
 
