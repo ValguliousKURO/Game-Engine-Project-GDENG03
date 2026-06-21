@@ -24,6 +24,7 @@ SOFTWARE.*/
 
 #include "MainGame.h"
 #include "Objects/Player.h"
+#include <cmath>
 
 
 MainGame::MainGame(const dx3d::GameDesc& desc) : dx3d::Game(desc)
@@ -36,24 +37,25 @@ void MainGame::onCreate()
 	auto& world = getWorld();
 
 	m_plane = world.createGameObject<dx3d::GameObject>();
-	m_plane->createOrGetComponent<dx3d::CubeComponent>();
-	m_plane->getTransform().setScale({ 10.0f, 0.1f, 10.0f });
+	m_plane->createOrGetComponent<dx3d::PlaneComponent>();
+	m_plane->getTransform().setScale({ 14.0f, 1.0f, 14.0f });
 	m_plane->getTransform().setPosition({ 0.0f, -1.0f, 0.0f });
 
 	m_cubeLeft = world.createGameObject<dx3d::GameObject>();
 	m_cubeLeft->createOrGetComponent<dx3d::CubeComponent>();
-	m_cubeLeft->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
-	m_cubeLeft->getTransform().setPosition({ -2.0f, 0.0f, 3.0f });
+	m_cubeLeft->getTransform().setScale({ 1.0f, 2.0f, 1.0f });
+	m_cubeLeft->getTransform().setPosition({ -3.0f, 0.0f, 4.0f });
 
 	m_cubeRight = world.createGameObject<dx3d::GameObject>();
 	m_cubeRight->createOrGetComponent<dx3d::CubeComponent>();
-	m_cubeRight->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
-	m_cubeRight->getTransform().setPosition({ 2.0f, 0.0f, 3.0f });
+	m_cubeRight->getTransform().setScale({ 1.5f, 1.0f, 1.5f });
+	m_cubeRight->getTransform().setPosition({ 3.0f, -0.25f, 6.0f });
+	m_cubeRight->getTransform().setRotation({ 0.0f, 0.7f, 0.0f });
 
 	m_sphere = world.createGameObject<dx3d::GameObject>();
-	m_sphere->createOrGetComponent<dx3d::CubeComponent>();
-	m_sphere->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
-	m_sphere->getTransform().setPosition({ 0.0f, 1.0f, 6.0f });
+	m_sphere->createOrGetComponent<dx3d::SphereComponent>();
+	m_sphere->getTransform().setScale({ 1.4f, 1.4f, 1.4f });
+	m_sphere->getTransform().setPosition({ 0.0f, 1.0f, 7.5f });
 
 	m_player = world.createGameObject<Player>();
 	m_player->getTransform().setPosition({ 0.0f, 1.5f, -7.0f });
@@ -67,4 +69,22 @@ void MainGame::onCreate()
 void MainGame::onUpdate(dx3d::f32 deltaTime)
 {
 	Game::onUpdate(deltaTime);
+
+	m_elapsedTime += deltaTime;
+
+	if (m_cubeLeft)
+	{
+		m_cubeLeft->getTransform().setRotation({ 0.0f, m_elapsedTime, 0.0f });
+	}
+
+	if (m_cubeRight)
+	{
+		m_cubeRight->getTransform().setRotation({ m_elapsedTime * 0.45f, 0.7f, m_elapsedTime * 0.25f });
+	}
+
+	if (m_sphere)
+	{
+		const auto scale = 1.25f + (std::sin(m_elapsedTime * 1.5f) * 0.2f);
+		m_sphere->getTransform().setScale({ scale, scale, scale });
+	}
 }

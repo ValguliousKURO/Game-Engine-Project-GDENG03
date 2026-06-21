@@ -38,11 +38,16 @@ namespace dx3d
 		virtual ~WorldRenderer() override;
 
 		void render(const World& world, SwapChain& swapChain, f32 deltaTime);
-	private:
+
 		struct Vertex
 		{
 			Vec3 position;
 			Vec4 color;
+		};
+		struct Mesh
+		{
+			RefPtr<VertexBuffer> vertexBuffer{};
+			RefPtr<IndexBuffer> indexBuffer{};
 		};
 		struct alignas(16) ConstantData
 		{
@@ -55,9 +60,10 @@ namespace dx3d
 		GraphicsDevice& m_graphicsDevice;
 		RefPtr<DeviceContext> m_deviceContext{};
 		RefPtr<GraphicsPipelineState> m_pipeline{};
-		RefPtr<VertexBuffer> m_vb{};
 		RefPtr<ConstantBuffer> m_cb{};
-		RefPtr<IndexBuffer> m_ib{};
+		Mesh m_cubeMesh{};
+		Mesh m_planeMesh{};
+		Mesh m_sphereMesh{};
 	};
 }
 

@@ -41,5 +41,6 @@ private:
 	dx3d::GameObject* m_cubeLeft{};
 	dx3d::GameObject* m_cubeRight{};
 	dx3d::GameObject* m_sphere{};
+	dx3d::f32 m_elapsedTime{};
 };
 

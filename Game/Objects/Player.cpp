@@ -111,7 +111,7 @@ void Player::onCreate()
 	input.bindCommand(dx3d::KeyCode::Unknown, dx3d::InputTrigger::MouseMoved,
 		std::make_unique<LookCommand>(*this, 0.001f));
 
-	input.bindCommand(dx3d::KeyCode::Escape, dx3d::InputTrigger::Pressed,
+	input.bindCommand(dx3d::KeyCode::Q, dx3d::InputTrigger::Pressed,
 		std::make_unique<QuitCommand>());
 }
 
