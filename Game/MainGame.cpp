@@ -27,11 +27,77 @@ SOFTWARE.*/
 #include <cmath>
 #include <numbers>
 
+namespace
+{
+	class SpawnCircleCommand final : public dx3d::InputCommand
+	{
+	public:
+		explicit SpawnCircleCommand(MainGame& game) : m_game(game) {}
+
+		void execute(dx3d::f32) override
+		{
+			m_game.spawnCircle();
+		}
+
+	private:
+		MainGame& m_game;
+	};
+
+	class RemoveRecentCircleCommand final : public dx3d::InputCommand
+	{
+	public:
+		explicit RemoveRecentCircleCommand(MainGame& game) : m_game(game) {}
+
+		void execute(dx3d::f32) override
+		{
+			m_game.removeMostRecentCircle();
+		}
+
+	private:
+		MainGame& m_game;
+	};
+
+	class RemoveAllCirclesCommand final : public dx3d::InputCommand
+	{
+	public:
+		explicit RemoveAllCirclesCommand(MainGame& game) : m_game(game) {}
+
+		void execute(dx3d::f32) override
+		{
+			m_game.removeAllCircles();
+		}
+
+	private:
+		MainGame& m_game;
+	};
+
+	class QuitGameCommand final : public dx3d::InputCommand
+	{
+	public:
+		explicit QuitGameCommand(MainGame& game) : m_game(game) {}
+
+		void execute(dx3d::f32) override
+		{
+			m_game.quit();
+		}
+
+	private:
+		MainGame& m_game;
+	};
+}
+
 
 MainGame::MainGame(const dx3d::GameDesc& desc) : dx3d::Game(desc)
 {
 	std::random_device randomDevice{};
 	m_randomEngine.seed(randomDevice());
+}
+
+MainGame::~MainGame()
+{
+	auto& input = getInputSystem();
+	input.unregisterListener(*this);
+	input.clearCommands();
 }
 
 void MainGame::onCreate()
@@ -48,6 +114,15 @@ void MainGame::onCreate()
 
 	getInputSystem().setCursorLocked(false);
 	getInputSystem().setCursorVisible(true);
+	getInputSystem().registerListener(*this);
+	getInputSystem().bindCommand(dx3d::KeyCode::Space, dx3d::InputTrigger::Pressed,
+		std::make_unique<SpawnCircleCommand>(*this));
+	getInputSystem().bindCommand(dx3d::KeyCode::Backspace, dx3d::InputTrigger::Pressed,
+		std::make_unique<RemoveRecentCircleCommand>(*this));
+	getInputSystem().bindCommand(dx3d::KeyCode::Delete, dx3d::InputTrigger::Pressed,
+		std::make_unique<RemoveAllCirclesCommand>(*this));
+	getInputSystem().bindCommand(dx3d::KeyCode::Escape, dx3d::InputTrigger::Pressed,
+		std::make_unique<QuitGameCommand>(*this));
 
 	spawnCircle();
 }
@@ -56,28 +131,6 @@ void MainGame::onCreate()
 void MainGame::onUpdate(dx3d::f32 deltaTime)
 {
 	Game::onUpdate(deltaTime);
-
-	auto& input = getInputSystem();
-	if (input.isKeyPressed(dx3d::KeyCode::Escape))
-	{
-		PostQuitMessage(0);
-		return;
-	}
-
-	if (input.isKeyPressed(dx3d::KeyCode::Space))
-	{
-		spawnCircle();
-	}
-
-	if (input.isKeyPressed(dx3d::KeyCode::Backspace))
-	{
-		removeMostRecentCircle();
-	}
-
-	if (input.isKeyPressed(dx3d::KeyCode::Delete))
-	{
-		removeAllCircles();
-	}
 
 	constexpr auto horizontalLimit = 7.6f;
 	constexpr auto verticalLimit = 5.6f;
@@ -112,6 +165,11 @@ void MainGame::onUpdate(dx3d::f32 deltaTime)
 		circle.object->getTransform().setPosition(circle.position);
 		circle.object->getTransform().setRotation({ 0.0f, 0.0f, circle.angle });
 	}
+}
+
+void MainGame::onKeyPressed(dx3d::KeyCode key)
+{
+	m_lastPressedKey = key;
 }
 
 void MainGame::spawnCircle()
@@ -168,4 +226,9 @@ void MainGame::removeAllCircles()
 	}
 
 	m_circles.clear();
+}
+
+void MainGame::quit()
+{
+	PostQuitMessage(0);
 }

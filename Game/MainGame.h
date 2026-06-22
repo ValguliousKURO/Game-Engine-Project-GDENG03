@@ -28,13 +28,19 @@ SOFTWARE.*/
 #include <vector>
 
 
-class MainGame : public dx3d::Game
+class MainGame : public dx3d::Game, public dx3d::InputListener
 {
 public:
 	explicit MainGame(const dx3d::GameDesc& desc);
+	virtual ~MainGame() override;
+	void spawnCircle();
+	void removeMostRecentCircle();
+	void removeAllCircles();
+	void quit();
 protected:
 	virtual void onCreate();
 	virtual void onUpdate(dx3d::f32 deltaTime);
+	virtual void onKeyPressed(dx3d::KeyCode key) override;
 
 
 private:
@@ -48,13 +54,10 @@ private:
 		dx3d::f32 angularVelocity{};
 	};
 
-	void spawnCircle();
-	void removeMostRecentCircle();
-	void removeAllCircles();
-
 private:
 	dx3d::GameObject* m_camera{};
 	std::vector<Circle> m_circles{};
 	std::mt19937 m_randomEngine{};
+	dx3d::KeyCode m_lastPressedKey{ dx3d::KeyCode::Unknown };
 };
 
