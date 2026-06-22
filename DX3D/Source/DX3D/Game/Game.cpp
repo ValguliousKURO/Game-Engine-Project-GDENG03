@@ -49,12 +49,12 @@ dx3d::Game::Game(const GameDesc& desc)
 
 	m_inputSystem->setCursorLockArea(m_display->getClientAreaInScreenSpace());
 
-	DX3DLogInfo("Game initialized.");
+	DX3DLogInfo("Engine initialized.");
 }
 
 dx3d::Game::~Game()
 {
-	DX3DLogInfo("Game is shutting down...");
+	DX3DLogInfo("Engine is shutting down...");
 }
 
 dx3d::World& dx3d::Game::getWorld() noexcept
