@@ -61,6 +61,7 @@ namespace dx3d
 		RefPtr<DeviceContext> m_deviceContext{};
 		RefPtr<GraphicsPipelineState> m_pipeline{};
 		RefPtr<ConstantBuffer> m_cb{};
+		Mesh m_circleMesh{};
 		Mesh m_cubeMesh{};
 		Mesh m_planeMesh{};
 		Mesh m_sphereMesh{};

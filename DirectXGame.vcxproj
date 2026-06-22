@@ -137,6 +137,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="DX3D\Source\DX3D\Component\CameraComponent.cpp" />
+    <ClCompile Include="DX3D\Source\DX3D\Component\CircleComponent.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Component\CubeComponent.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Component\PlaneComponent.cpp" />
     <ClCompile Include="DX3D\Source\DX3D\Component\SphereComponent.cpp" />
@@ -167,6 +168,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DX3D\Include\DX3D\Component\CameraComponent.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Component\CircleComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\CubeComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\PlaneComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\SphereComponent.h" />

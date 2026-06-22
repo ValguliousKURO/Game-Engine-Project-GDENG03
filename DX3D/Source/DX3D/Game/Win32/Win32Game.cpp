@@ -24,6 +24,8 @@ SOFTWARE.*/
 
 #include <DX3D/Game/Game.h>
 #include <Windows.h>
+#include <chrono>
+#include <thread>
 
 
 
@@ -33,9 +35,12 @@ void dx3d::Game::run()
 	onCreate();
 
 	MSG msg{};
+	constexpr auto targetFrameTime = std::chrono::duration<f32>(1.0f / 60.0f);
 	m_previousTime = std::chrono::steady_clock::now();
 	while (m_isRunning)
 	{
+		const auto frameStartTime = std::chrono::steady_clock::now();
+
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			if (msg.message == WM_QUIT)
@@ -48,6 +53,12 @@ void dx3d::Game::run()
 			DispatchMessage(&msg);
 		}
 		onInternalUpdate();
+
+		const auto frameTime = std::chrono::steady_clock::now() - frameStartTime;
+		if (frameTime < targetFrameTime)
+		{
+			std::this_thread::sleep_for(targetFrameTime - frameTime);
+		}
 	}
 
 }

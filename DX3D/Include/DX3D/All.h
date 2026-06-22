@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <DX3D/Game/Component.h>
 
 #include <DX3D/Component/TransformComponent.h>
+#include <DX3D/Component/CircleComponent.h>
 #include <DX3D/Component/CubeComponent.h>
 #include <DX3D/Component/SphereComponent.h>
 #include <DX3D/Component/PlaneComponent.h>

@@ -24,6 +24,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <DX3D/All.h>
+#include <random>
+#include <vector>
 
 
 class MainGame : public dx3d::Game
@@ -36,11 +38,23 @@ protected:
 
 
 private:
-	dx3d::GameObject* m_player{};
-	dx3d::GameObject* m_plane{};
-	dx3d::GameObject* m_cubeLeft{};
-	dx3d::GameObject* m_cubeRight{};
-	dx3d::GameObject* m_sphere{};
-	dx3d::f32 m_elapsedTime{};
+	struct Circle
+	{
+		dx3d::GameObject* object{};
+		dx3d::Vec3 position{};
+		dx3d::Vec3 velocity{};
+		dx3d::f32 radius{};
+		dx3d::f32 angle{};
+		dx3d::f32 angularVelocity{};
+	};
+
+	void spawnCircle();
+	void removeMostRecentCircle();
+	void removeAllCircles();
+
+private:
+	dx3d::GameObject* m_camera{};
+	std::vector<Circle> m_circles{};
+	std::mt19937 m_randomEngine{};
 };
 

@@ -170,6 +170,8 @@ namespace dx3d
 
 
 		Escape,
+		Backspace,
+		Delete,
 		Shift,
 		Space,
 		Enter,

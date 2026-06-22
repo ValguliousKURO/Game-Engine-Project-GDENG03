@@ -23,12 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "MainGame.h"
-#include "Objects/Player.h"
+#include <Windows.h>
 #include <cmath>
+#include <numbers>
 
 
 MainGame::MainGame(const dx3d::GameDesc& desc) : dx3d::Game(desc)
 {
+	std::random_device randomDevice{};
+	m_randomEngine.seed(randomDevice());
 }
 
 void MainGame::onCreate()
@@ -36,33 +39,17 @@ void MainGame::onCreate()
 	Game::onCreate();
 	auto& world = getWorld();
 
-	m_plane = world.createGameObject<dx3d::GameObject>();
-	m_plane->createOrGetComponent<dx3d::PlaneComponent>();
-	m_plane->getTransform().setScale({ 14.0f, 1.0f, 14.0f });
-	m_plane->getTransform().setPosition({ 0.0f, -1.0f, 0.0f });
+	m_camera = world.createGameObject<dx3d::GameObject>();
+	auto camera = m_camera->createOrGetComponent<dx3d::CameraComponent>();
+	camera->setNearPlane(0.05f);
+	camera->setFarPlane(100.0f);
+	camera->setFieldOfView(1.1f);
+	m_camera->getTransform().setPosition({ 0.0f, 0.0f, -10.0f });
 
-	m_cubeLeft = world.createGameObject<dx3d::GameObject>();
-	m_cubeLeft->createOrGetComponent<dx3d::CubeComponent>();
-	m_cubeLeft->getTransform().setScale({ 1.0f, 2.0f, 1.0f });
-	m_cubeLeft->getTransform().setPosition({ -3.0f, 0.0f, 4.0f });
+	getInputSystem().setCursorLocked(false);
+	getInputSystem().setCursorVisible(true);
 
-	m_cubeRight = world.createGameObject<dx3d::GameObject>();
-	m_cubeRight->createOrGetComponent<dx3d::CubeComponent>();
-	m_cubeRight->getTransform().setScale({ 1.5f, 1.0f, 1.5f });
-	m_cubeRight->getTransform().setPosition({ 3.0f, -0.25f, 6.0f });
-	m_cubeRight->getTransform().setRotation({ 0.0f, 0.7f, 0.0f });
-
-	m_sphere = world.createGameObject<dx3d::GameObject>();
-	m_sphere->createOrGetComponent<dx3d::SphereComponent>();
-	m_sphere->getTransform().setScale({ 1.4f, 1.4f, 1.4f });
-	m_sphere->getTransform().setPosition({ 0.0f, 1.0f, 7.5f });
-
-	m_player = world.createGameObject<Player>();
-	m_player->getTransform().setPosition({ 0.0f, 1.5f, -7.0f });
-	m_player->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
-
-	getInputSystem().setCursorLocked(true);
-	getInputSystem().setCursorVisible(false);
+	spawnCircle();
 }
 
 
@@ -70,21 +57,115 @@ void MainGame::onUpdate(dx3d::f32 deltaTime)
 {
 	Game::onUpdate(deltaTime);
 
-	m_elapsedTime += deltaTime;
-
-	if (m_cubeLeft)
+	auto& input = getInputSystem();
+	if (input.isKeyPressed(dx3d::KeyCode::Escape))
 	{
-		m_cubeLeft->getTransform().setRotation({ 0.0f, m_elapsedTime, 0.0f });
+		PostQuitMessage(0);
+		return;
 	}
 
-	if (m_cubeRight)
+	if (input.isKeyPressed(dx3d::KeyCode::Space))
 	{
-		m_cubeRight->getTransform().setRotation({ m_elapsedTime * 0.45f, 0.7f, m_elapsedTime * 0.25f });
+		spawnCircle();
 	}
 
-	if (m_sphere)
+	if (input.isKeyPressed(dx3d::KeyCode::Backspace))
 	{
-		const auto scale = 1.25f + (std::sin(m_elapsedTime * 1.5f) * 0.2f);
-		m_sphere->getTransform().setScale({ scale, scale, scale });
+		removeMostRecentCircle();
 	}
+
+	if (input.isKeyPressed(dx3d::KeyCode::Delete))
+	{
+		removeAllCircles();
+	}
+
+	constexpr auto horizontalLimit = 7.6f;
+	constexpr auto verticalLimit = 5.6f;
+
+	for (auto& circle : m_circles)
+	{
+		circle.position += circle.velocity * deltaTime;
+		circle.angle += circle.angularVelocity * deltaTime;
+
+		if (circle.position.x - circle.radius < -horizontalLimit)
+		{
+			circle.position.x = -horizontalLimit + circle.radius;
+			circle.velocity.x *= -1.0f;
+		}
+		else if (circle.position.x + circle.radius > horizontalLimit)
+		{
+			circle.position.x = horizontalLimit - circle.radius;
+			circle.velocity.x *= -1.0f;
+		}
+
+		if (circle.position.y - circle.radius < -verticalLimit)
+		{
+			circle.position.y = -verticalLimit + circle.radius;
+			circle.velocity.y *= -1.0f;
+		}
+		else if (circle.position.y + circle.radius > verticalLimit)
+		{
+			circle.position.y = verticalLimit - circle.radius;
+			circle.velocity.y *= -1.0f;
+		}
+
+		circle.object->getTransform().setPosition(circle.position);
+		circle.object->getTransform().setRotation({ 0.0f, 0.0f, circle.angle });
+	}
+}
+
+void MainGame::spawnCircle()
+{
+	constexpr auto pi = std::numbers::pi_v<dx3d::f32>;
+	constexpr auto horizontalLimit = 7.6f;
+	constexpr auto verticalLimit = 5.6f;
+
+	std::uniform_real_distribution<dx3d::f32> radiusDistribution(0.35f, 0.65f);
+	std::uniform_real_distribution<dx3d::f32> angleDistribution(0.0f, pi * 2.0f);
+	std::uniform_real_distribution<dx3d::f32> speedDistribution(3.0f, 5.0f);
+	std::uniform_real_distribution<dx3d::f32> spinDistribution(-4.0f, 4.0f);
+
+	const auto radius = radiusDistribution(m_randomEngine);
+	std::uniform_real_distribution<dx3d::f32> xDistribution(-horizontalLimit + radius, horizontalLimit - radius);
+	std::uniform_real_distribution<dx3d::f32> yDistribution(-verticalLimit + radius, verticalLimit - radius);
+
+	const auto directionAngle = angleDistribution(m_randomEngine);
+	const auto speed = speedDistribution(m_randomEngine);
+	const auto objectAngle = angleDistribution(m_randomEngine);
+
+	auto circleObject = getWorld().createGameObject<dx3d::GameObject>();
+	circleObject->createOrGetComponent<dx3d::CircleComponent>();
+	circleObject->getTransform().setScale({ radius * 2.0f, radius * 2.0f, radius * 2.0f });
+	circleObject->getTransform().setPosition({ xDistribution(m_randomEngine), yDistribution(m_randomEngine), 0.0f });
+	circleObject->getTransform().setRotation({ 0.0f, 0.0f, objectAngle });
+
+	m_circles.push_back({
+		circleObject,
+		circleObject->getTransform().getPosition(),
+		{std::cos(directionAngle) * speed, std::sin(directionAngle) * speed, 0.0f},
+		radius,
+		objectAngle,
+		spinDistribution(m_randomEngine)
+	});
+}
+
+void MainGame::removeMostRecentCircle()
+{
+	if (m_circles.empty())
+	{
+		return;
+	}
+
+	m_circles.back().object->getTransform().setScale({ 0.0f, 0.0f, 0.0f });
+	m_circles.pop_back();
+}
+
+void MainGame::removeAllCircles()
+{
+	for (auto& circle : m_circles)
+	{
+		circle.object->getTransform().setScale({ 0.0f, 0.0f, 0.0f });
+	}
+
+	m_circles.clear();
 }

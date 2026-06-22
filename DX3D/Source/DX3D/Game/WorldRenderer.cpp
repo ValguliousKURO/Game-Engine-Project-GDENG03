@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <DX3D/Game/GameObject.h>
 
 #include <DX3D/Component/TransformComponent.h>
+#include <DX3D/Component/CircleComponent.h>
 #include <DX3D/Component/CubeComponent.h>
 #include <DX3D/Component/PlaneComponent.h>
 #include <DX3D/Component/SphereComponent.h>
@@ -101,6 +102,34 @@ namespace
 				2,3,0
 			}
 		};
+	}
+
+	MeshData createCircleMeshData()
+	{
+		constexpr auto pi = 3.14159265359f;
+		constexpr dx3d::ui32 segments = 48;
+
+		MeshData data{};
+		data.vertices.push_back({ {0.0f, 0.0f, 0.0f}, {1.0f, 0.95f, 0.2f, 1.0f} });
+
+		for (auto segment = 0u; segment <= segments; ++segment)
+		{
+			const auto u = static_cast<dx3d::f32>(segment) / static_cast<dx3d::f32>(segments);
+			const auto angle = u * pi * 2.0f;
+			data.vertices.push_back({
+				{std::cos(angle) * 0.5f, std::sin(angle) * 0.5f, 0.0f},
+				{0.25f + (0.75f * u), 0.35f + (0.45f * (1.0f - u)), 1.0f - (0.6f * u), 1.0f}
+			});
+		}
+
+		for (auto segment = 1u; segment <= segments; ++segment)
+		{
+			data.indices.push_back(0u);
+			data.indices.push_back(segment);
+			data.indices.push_back(segment + 1u);
+		}
+
+		return data;
 	}
 
 	MeshData createSphereMeshData()
@@ -178,6 +207,7 @@ dx3d::WorldRenderer::WorldRenderer(const WorldRendererDesc& desc) : Base(desc.ba
 	m_pipeline = device.createGraphicsPipelineState({ *vsSig, *ps });
 
 	m_cb = device.createConstantBuffer({ {}, sizeof(ConstantData) });
+	m_circleMesh = createMesh(device, createCircleMeshData());
 	m_cubeMesh = createMesh(device, createCubeMeshData());
 	m_planeMesh = createMesh(device, createPlaneMeshData());
 	m_sphereMesh = createMesh(device, createSphereMeshData());
@@ -192,7 +222,7 @@ void dx3d::WorldRenderer::render(const World& world, SwapChain& swapChain, f32 d
 	auto size = swapChain.getSize();
 
 	auto& context = *m_deviceContext;
-	context.clearAndSetBackBuffer(swapChain, { 0.27f, 0.39f, 0.55f, 1.0f });
+	context.clearAndSetBackBuffer(swapChain, { 0.0f, 0.0f, 0.0f, 1.0f });
 	context.setGraphicsPipelineState(*m_pipeline);
 	context.setViewportSize(size);
 
@@ -235,6 +265,7 @@ void dx3d::WorldRenderer::render(const World& world, SwapChain& swapChain, f32 d
 		}
 	};
 
+	drawComponents.operator()<CircleComponent>(m_circleMesh);
 	drawComponents.operator()<PlaneComponent>(m_planeMesh);
 	drawComponents.operator()<CubeComponent>(m_cubeMesh);
 	drawComponents.operator()<SphereComponent>(m_sphereMesh);
