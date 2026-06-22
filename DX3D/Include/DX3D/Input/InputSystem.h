@@ -35,6 +35,7 @@ namespace dx3d
 	class InputCommand
 	{
 	public:
+		//
 		virtual ~InputCommand() = default;
 		virtual void execute(f32 deltaTime) = 0;
 	};
@@ -42,6 +43,7 @@ namespace dx3d
 	class InputListener
 	{
 	public:
+
 		virtual ~InputListener() = default;
 
 		virtual void onKeyPressed(KeyCode key) {}
@@ -75,6 +77,7 @@ namespace dx3d
 		void setCursorLocked(bool locked);
 		void setCursorLockArea(const Rect& rect);
 
+		//listener stuff
 		void registerListener(InputListener& listener);
 		void unregisterListener(InputListener& listener);
 
