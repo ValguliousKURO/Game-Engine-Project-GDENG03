@@ -125,8 +125,8 @@ namespace
 		for (auto segment = 1u; segment <= segments; ++segment)
 		{
 			data.indices.push_back(0u);
-			data.indices.push_back(segment);
 			data.indices.push_back(segment + 1u);
+			data.indices.push_back(segment);
 		}
 
 		return data;
