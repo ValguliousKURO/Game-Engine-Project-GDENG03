@@ -1,5 +1,3 @@
-
-
 #include "MainGame.h"
 #include <Windows.h>
 #include <cmath>
@@ -49,6 +47,40 @@ namespace
 		MainGame& m_game;
 	};
 
+	class UndoCommand final : public dx3d::InputCommand
+	{
+	public:
+		explicit UndoCommand(MainGame& game) : m_game(game) {}
+
+		void execute(dx3d::f32) override
+		{
+			if (m_game.getInputSystem().isKeyDown(dx3d::KeyCode::Control))
+			{
+				m_game.undo();
+			}
+		}
+
+	private:
+		MainGame& m_game;
+	};
+
+	class RedoCommand final : public dx3d::InputCommand
+	{
+	public:
+		explicit RedoCommand(MainGame& game) : m_game(game) {}
+
+		void execute(dx3d::f32) override
+		{
+			if (m_game.getInputSystem().isKeyDown(dx3d::KeyCode::Control))
+			{
+				m_game.redo();
+			}
+		}
+
+	private:
+		MainGame& m_game;
+	};
+
 	class QuitGameCommand final : public dx3d::InputCommand
 	{
 	public:
@@ -64,6 +96,108 @@ namespace
 	};
 }
 
+class MainGame::CircleEditCommand
+{
+public:
+	virtual ~CircleEditCommand() = default;
+	virtual bool execute(MainGame& game) = 0;
+	virtual void undo(MainGame& game) = 0;
+};
+
+namespace
+{
+	class SpawnCircleEditCommand final : public MainGame::CircleEditCommand
+	{
+	public:
+		bool execute(MainGame& game) override
+		{
+			if (!m_initialized)
+			{
+				m_state = game.createRandomCircleState();
+				m_initialized = true;
+			}
+
+			m_circleIndex = game.addCircle(m_state);
+			return true;
+		}
+
+		void undo(MainGame& game) override
+		{
+			game.deactivateCircle(m_circleIndex);
+		}
+
+	private:
+		MainGame::CircleState m_state{};
+		size_t m_circleIndex{};
+		bool m_initialized{};
+	};
+
+	class RemoveRecentCircleEditCommand final : public MainGame::CircleEditCommand
+	{
+	public:
+		bool execute(MainGame& game) override
+		{
+			if (!game.findMostRecentActiveCircle(m_circleIndex))
+			{
+				return false;
+			}
+
+			game.getCircleState(m_circleIndex, m_state);
+			game.deactivateCircle(m_circleIndex);
+			return true;
+		}
+
+		void undo(MainGame& game) override
+		{
+			game.activateCircle(m_circleIndex, m_state);
+		}
+
+	private:
+		MainGame::CircleState m_state{};
+		size_t m_circleIndex{};
+	};
+
+	class RemoveAllCirclesEditCommand final : public MainGame::CircleEditCommand
+	{
+	public:
+		bool execute(MainGame& game) override
+		{
+			m_removedCircles.clear();
+
+			for (auto index = size_t{ 0 }; index < game.getCircleCount(); ++index)
+			{
+				if (!game.isCircleActive(index))
+				{
+					continue;
+				}
+
+				MainGame::CircleState state{};
+				game.getCircleState(index, state);
+				m_removedCircles.push_back({ index, state });
+				game.deactivateCircle(index);
+			}
+
+			return !m_removedCircles.empty();
+		}
+
+		void undo(MainGame& game) override
+		{
+			for (const auto& removedCircle : m_removedCircles)
+			{
+				game.activateCircle(removedCircle.index, removedCircle.state);
+			}
+		}
+
+	private:
+		struct RemovedCircle
+		{
+			size_t index{};
+			MainGame::CircleState state{};
+		};
+
+		std::vector<RemovedCircle> m_removedCircles{};
+	};
+}
 
 MainGame::MainGame(const dx3d::GameDesc& desc) : dx3d::Game(desc)
 {
@@ -90,21 +224,25 @@ void MainGame::onCreate()
 	camera->setFieldOfView(1.1f);
 	m_camera->getTransform().setPosition({ 0.0f, 0.0f, -10.0f });
 
-	getInputSystem().setCursorLocked(false);
-	getInputSystem().setCursorVisible(true);
-	getInputSystem().registerListener(*this);
-	getInputSystem().bindCommand(dx3d::KeyCode::Space, dx3d::InputTrigger::Pressed,
+	auto& input = getInputSystem();
+	input.setCursorLocked(false);
+	input.setCursorVisible(true);
+	input.registerListener(*this);
+	input.bindCommand(dx3d::KeyCode::Space, dx3d::InputTrigger::Pressed,
 		std::make_unique<SpawnCircleCommand>(*this));
-	getInputSystem().bindCommand(dx3d::KeyCode::Backspace, dx3d::InputTrigger::Pressed,
+	input.bindCommand(dx3d::KeyCode::Backspace, dx3d::InputTrigger::Pressed,
 		std::make_unique<RemoveRecentCircleCommand>(*this));
-	getInputSystem().bindCommand(dx3d::KeyCode::Delete, dx3d::InputTrigger::Pressed,
+	input.bindCommand(dx3d::KeyCode::Delete, dx3d::InputTrigger::Pressed,
 		std::make_unique<RemoveAllCirclesCommand>(*this));
-	getInputSystem().bindCommand(dx3d::KeyCode::Escape, dx3d::InputTrigger::Pressed,
+	input.bindCommand(dx3d::KeyCode::Z, dx3d::InputTrigger::Pressed,
+		std::make_unique<UndoCommand>(*this));
+	input.bindCommand(dx3d::KeyCode::Y, dx3d::InputTrigger::Pressed,
+		std::make_unique<RedoCommand>(*this));
+	input.bindCommand(dx3d::KeyCode::Escape, dx3d::InputTrigger::Pressed,
 		std::make_unique<QuitGameCommand>(*this));
 
 	spawnCircle();
 }
-
 
 void MainGame::onUpdate(dx3d::f32 deltaTime)
 {
@@ -115,6 +253,11 @@ void MainGame::onUpdate(dx3d::f32 deltaTime)
 
 	for (auto& circle : m_circles)
 	{
+		if (!circle.active)
+		{
+			continue;
+		}
+
 		circle.position += circle.velocity * deltaTime;
 		circle.angle += circle.angularVelocity * deltaTime;
 
@@ -140,8 +283,7 @@ void MainGame::onUpdate(dx3d::f32 deltaTime)
 			circle.velocity.y *= -1.0f;
 		}
 
-		circle.object->getTransform().setPosition(circle.position);
-		circle.object->getTransform().setRotation({ 0.0f, 0.0f, circle.angle });
+		applyCircleTransform(circle);
 	}
 }
 
@@ -151,6 +293,54 @@ void MainGame::onKeyPressed(dx3d::KeyCode key)
 }
 
 void MainGame::spawnCircle()
+{
+	executeCircleCommand(std::make_unique<SpawnCircleEditCommand>());
+}
+
+void MainGame::removeMostRecentCircle()
+{
+	executeCircleCommand(std::make_unique<RemoveRecentCircleEditCommand>());
+}
+
+void MainGame::removeAllCircles()
+{
+	executeCircleCommand(std::make_unique<RemoveAllCirclesEditCommand>());
+}
+
+void MainGame::undo()
+{
+	if (m_undoCommands.empty())
+	{
+		return;
+	}
+
+	auto command = std::move(m_undoCommands.back());
+	m_undoCommands.pop_back();
+	command->undo(*this);
+	m_redoCommands.push_back(std::move(command));
+}
+
+void MainGame::redo()
+{
+	if (m_redoCommands.empty())
+	{
+		return;
+	}
+
+	auto command = std::move(m_redoCommands.back());
+	m_redoCommands.pop_back();
+	if (command->execute(*this))
+	{
+		m_undoCommands.push_back(std::move(command));
+	}
+}
+
+void MainGame::quit()
+{
+	PostQuitMessage(0);
+}
+
+MainGame::CircleState MainGame::createRandomCircleState()
 {
 	constexpr auto pi = std::numbers::pi_v<dx3d::f32>;
 	constexpr auto horizontalLimit = 7.6f;
@@ -167,46 +357,128 @@ void MainGame::spawnCircle()
 
 	const auto directionAngle = angleDistribution(m_randomEngine);
 	const auto speed = speedDistribution(m_randomEngine);
-	const auto objectAngle = angleDistribution(m_randomEngine);
 
+	return {
+		{xDistribution(m_randomEngine), yDistribution(m_randomEngine), 0.0f},
+		{std::cos(directionAngle) * speed, std::sin(directionAngle) * speed, 0.0f},
+		radius,
+		angleDistribution(m_randomEngine),
+		spinDistribution(m_randomEngine)
+	};
+}
+
+size_t MainGame::addCircle(const CircleState& state)
+{
 	auto circleObject = getWorld().createGameObject<dx3d::GameObject>();
 	circleObject->createOrGetComponent<dx3d::CircleComponent>();
-	circleObject->getTransform().setScale({ radius * 2.0f, radius * 2.0f, radius * 2.0f });
-	circleObject->getTransform().setPosition({ xDistribution(m_randomEngine), yDistribution(m_randomEngine), 0.0f });
-	circleObject->getTransform().setRotation({ 0.0f, 0.0f, objectAngle });
 
 	m_circles.push_back({
 		circleObject,
-		circleObject->getTransform().getPosition(),
-		{std::cos(directionAngle) * speed, std::sin(directionAngle) * speed, 0.0f},
-		radius,
-		objectAngle,
-		spinDistribution(m_randomEngine)
-	});
+		state.position,
+		state.velocity,
+		state.radius,
+		state.angle,
+		state.angularVelocity,
+		true
+		});
+
+	applyCircleTransform(m_circles.back());
+	return m_circles.size() - 1u;
 }
 
-void MainGame::removeMostRecentCircle()
+void MainGame::activateCircle(size_t index, const CircleState& state)
 {
-	if (m_circles.empty())
+	if (index >= m_circles.size())
 	{
 		return;
 	}
 
-	m_circles.back().object->getTransform().setScale({ 0.0f, 0.0f, 0.0f });
-	m_circles.pop_back();
+	auto& circle = m_circles[index];
+	circle.position = state.position;
+	circle.velocity = state.velocity;
+	circle.radius = state.radius;
+	circle.angle = state.angle;
+	circle.angularVelocity = state.angularVelocity;
+	circle.active = true;
+	applyCircleTransform(circle);
 }
 
-void MainGame::removeAllCircles()
+void MainGame::deactivateCircle(size_t index)
 {
-	for (auto& circle : m_circles)
+	if (index >= m_circles.size())
+	{
+		return;
+	}
+
+	auto& circle = m_circles[index];
+	circle.active = false;
+	if (circle.object)
 	{
 		circle.object->getTransform().setScale({ 0.0f, 0.0f, 0.0f });
 	}
-
-	m_circles.clear();
 }
 
-void MainGame::quit()
+bool MainGame::findMostRecentActiveCircle(size_t& index) const
 {
-	PostQuitMessage(0);
+	for (auto i = m_circles.size(); i > 0u; --i)
+	{
+		const auto candidate = i - 1u;
+		if (m_circles[candidate].active)
+		{
+			index = candidate;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool MainGame::getCircleState(size_t index, CircleState& state) const
+{
+	if (index >= m_circles.size())
+	{
+		return false;
+	}
+
+	const auto& circle = m_circles[index];
+	state = { circle.position, circle.velocity, circle.radius, circle.angle, circle.angularVelocity };
+	return true;
+}
+
+bool MainGame::isCircleActive(size_t index) const
+{
+	return index < m_circles.size() && m_circles[index].active;
+}
+
+size_t MainGame::getCircleCount() const
+{
+	return m_circles.size();
+}
+
+void MainGame::executeCircleCommand(std::unique_ptr<CircleEditCommand> command)
+{
+	if (!command)
+	{
+		return;
+	}
+
+	if (!command->execute(*this))
+	{
+		return;
+	}
+
+	m_undoCommands.push_back(std::move(command));
+	m_redoCommands.clear();
+}
+
+void MainGame::applyCircleTransform(Circle& circle)
+{
+	if (!circle.object)
+	{
+		return;
+	}
+
+	circle.object->getTransform().setScale({ circle.radius * 2.0f, circle.radius * 2.0f, circle.radius * 2.0f });
+	circle.object->getTransform().setPosition(circle.position);
+	circle.object->getTransform().setRotation({ 0.0f, 0.0f, circle.angle });
 }
