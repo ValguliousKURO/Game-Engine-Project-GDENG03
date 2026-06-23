@@ -52,13 +52,10 @@ namespace
 	public:
 		explicit UndoCommand(MainGame& game) : m_game(game) {}
 
-		void execute(dx3d::f32) override
-		{
-			if (m_game.getInputSystem().isKeyDown(dx3d::KeyCode::Control))
-			{
-				m_game.undo();
-			}
-		}
+	void execute(dx3d::f32) override
+	{
+		m_game.undo();
+	}
 
 	private:
 		MainGame& m_game;
@@ -69,13 +66,10 @@ namespace
 	public:
 		explicit RedoCommand(MainGame& game) : m_game(game) {}
 
-		void execute(dx3d::f32) override
-		{
-			if (m_game.getInputSystem().isKeyDown(dx3d::KeyCode::Control))
-			{
-				m_game.redo();
-			}
-		}
+	void execute(dx3d::f32) override
+	{
+		m_game.redo();
+	}
 
 	private:
 		MainGame& m_game;
@@ -371,6 +365,7 @@ size_t MainGame::addCircle(const CircleState& state)
 {
 	auto circleObject = getWorld().createGameObject<dx3d::GameObject>();
 	circleObject->createOrGetComponent<dx3d::SphereComponent>();
+	//circleObject->createOrGetComponent<dx3d::CircleComponent>();
 
 	m_circles.push_back({
 		circleObject,
