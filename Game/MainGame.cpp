@@ -364,8 +364,8 @@ MainGame::CircleState MainGame::createRandomCircleState()
 size_t MainGame::addCircle(const CircleState& state)
 {
 	auto circleObject = getWorld().createGameObject<dx3d::GameObject>();
-	circleObject->createOrGetComponent<dx3d::SphereComponent>();
-	//circleObject->createOrGetComponent<dx3d::CircleComponent>();
+	circleObject->createOrGetComponent<dx3d::SphereComponent>();  //3d sphere = submitted
+	//circleObject->createOrGetComponent<dx3d::CircleComponent>(); //2d circle
 
 	m_circles.push_back({
 		circleObject,
