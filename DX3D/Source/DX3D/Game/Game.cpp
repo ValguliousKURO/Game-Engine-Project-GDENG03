@@ -38,7 +38,7 @@ dx3d::Game::Game(const GameDesc& desc)
 {
 	m_logger = std::make_unique<Logger>(desc.logLevel);	
 
-	DX3DLogInfo("PardCode | C++ 3D Game Tutorial Series");
+	DX3DLogInfo("Rendering System - DACANAY");
 	DX3DLogInfo("--------------------------------------");
 
 	m_inputSystem = std::make_unique<InputSystem>(InputSystemDesc{ *m_logger });
