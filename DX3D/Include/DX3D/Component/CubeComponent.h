@@ -25,8 +25,7 @@ SOFTWARE.*/
 #pragma once
 #include <DX3D/Core/Core.h>
 #include <DX3D/Game/Component.h>
-#include <DX3D/Math/Vec3.h>
-#include <DX3D/Math/Mat4x4.h>
+#include <DX3D/Component/PrimitiveMeshData.h>
 
 
 namespace dx3d
@@ -36,5 +35,6 @@ namespace dx3d
 		dx3d_typeid(CubeComponent)
 	public:
 		explicit CubeComponent(const ComponentDesc& data);
+		static PrimitiveMeshData createMeshData();
 	};
 }

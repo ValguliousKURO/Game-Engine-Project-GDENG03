@@ -169,6 +169,7 @@
     <ClInclude Include="DX3D\Include\DX3D\Component\CameraComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\CubeComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\PlaneComponent.h" />
+    <ClInclude Include="DX3D\Include\DX3D\Component\PrimitiveMeshData.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\SphereComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Component\TransformComponent.h" />
     <ClInclude Include="DX3D\Include\DX3D\Core\Identifiable.h" />
