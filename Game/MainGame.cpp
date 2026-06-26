@@ -95,7 +95,7 @@ void MainGame::onCreate()
 	createCard({ -0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.31f });// Card 14: Left leg
 	createCard({ 0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.31f });  // Card 15: Right leg
 
-	// Camera setup - moved far away to remove perspective distortion (making it look isometric like the reference picture)
+	
 	m_player = world.createGameObject<Player>();
 	m_player->getTransform().setPosition({ 5.0f, 10.0f, 12.0f });
 	m_player->getTransform().setRotation({ 0.400f, -2.45f, 0.0f });
