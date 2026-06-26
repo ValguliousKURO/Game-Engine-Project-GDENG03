@@ -55,15 +55,26 @@ void MainGame::onCreate()
 	//m_cube2->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
 	//m_cube2->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
 
-	m_cube3 = world.createGameObject<dx3d::GameObject>();
-	m_cube3->createOrGetComponent<dx3d::CubeComponent>();
-	m_cube3->getTransform().setPosition({ -1.5f, 3.0f, -2.0f });
-	m_cube3->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
-	m_cube3->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
+	//m_cube3 = world.createGameObject<dx3d::GameObject>();
+	//m_cube3->createOrGetComponent<dx3d::CubeComponent>();
+	//m_cube3->getTransform().setPosition({ -1.5f, 3.0f, -2.0f });
+	//m_cube3->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
+	//m_cube3->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
+
+	//m_player = world.createGameObject<Player>();
+	//m_player->getTransform().setPosition({ 4.0f, 5.0f, 5.0f });
+	//m_player->getTransform().setRotation({ 0.374f, -2.472f, 0.0f });
+
+	m_warpingCube = world.createGameObject<dx3d::GameObject>();
+	m_warpingCube->createOrGetComponent<dx3d::CubeComponent>();
+	m_warpingCube->getTransform().setPosition({ 0.0f, 0.0f, 0.0f });
+	m_warpingCube->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
+	m_warpingCube->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
 
 	m_player = world.createGameObject<Player>();
-	m_player->getTransform().setPosition({ 4.0f, 5.0f, 5.0f });
-	m_player->getTransform().setRotation({ 0.374f, -2.472f, 0.0f });
+	m_player->getTransform().setPosition({ 0.0f, 2.0f, -6.0f });
+	m_player->getTransform().setRotation({ 0.32f, 0.0f, 0.0f });
+
 
 
 	/*m_plane = world.createGameObject<dx3d::GameObject>();
@@ -118,6 +129,25 @@ void MainGame::onCreate()
 void MainGame::onUpdate(dx3d::f32 deltaTime)
 {
 	Game::onUpdate(deltaTime);
+
+	m_elapsedTime += deltaTime;
+
+	if (m_warpingCube)
+	{
+		// t goes between 0.0f (uniform cube) and 1.0f (flat horizontal plane)
+		float t = (std::sin(m_elapsedTime * 1.5f) + 1.0f) * 0.5f;
+
+		// We scale the local X and Y dimensions to 6.0f (larger scale) and flatten the Z dimension to 0.01f.
+		// By rotating the cube 90 degrees (1.5708 rad) around the X-axis, the flat plane is aligned
+		// horizontally in world coordinates, satisfying both "horizontal plane" and "larger X, Y scale".
+		float scaleX = 1.0f + 5.0f * t;
+		float scaleY = 1.0f + 5.0f * t;
+		float scaleZ = 1.0f - 0.99f * t;
+		float rotationX = 1.5708f * t;
+
+		m_warpingCube->getTransform().setScale({ scaleX, scaleY, scaleZ });
+		m_warpingCube->getTransform().setRotation({ rotationX, 0.0f, 0.0f });
+	}
 
 	/*m_elapsedTime += deltaTime;
 
