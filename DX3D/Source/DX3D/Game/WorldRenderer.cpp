@@ -112,9 +112,10 @@ void dx3d::WorldRenderer::render(const World& world, SwapChain& swapChain, f32 d
 	}
 
 
-	auto drawMesh = [&context, this, &data](const Mesh& mesh, TransformComponent& transform)
+	auto drawMesh = [&context, this, &data](const Mesh& mesh, TransformComponent& transform, const Vec4& color)
 	{
 		data.world = transform.getAffineWorldMatrix();
+		data.materialColor = color;
 
 		auto& cb = *m_cb;
 		context.updateConstantBuffer(cb, &data);
@@ -124,7 +125,7 @@ void dx3d::WorldRenderer::render(const World& world, SwapChain& swapChain, f32 d
 		context.drawIndexedTriangleList(mesh.indexBuffer->getIndexListSize(), 0u, 0u);
 	};
 
-	auto drawComponents = [&world, &numComponents, &drawMesh]<typename ComponentType>(const Mesh& mesh)
+	auto drawComponents = [&world, &numComponents, &drawMesh]<typename ComponentType>(const Mesh& mesh, const Vec4& color)
 	{
 		auto components = world.getComponents<ComponentType>(numComponents);
 
@@ -132,13 +133,13 @@ void dx3d::WorldRenderer::render(const World& world, SwapChain& swapChain, f32 d
 		{
 			auto component = components[i];
 			auto& transform = component->getGameObject().getTransform();
-			drawMesh(mesh, transform);
+			drawMesh(mesh, transform, color);
 		}
 	};
 
-	drawComponents.operator()<PlaneComponent>(m_planeMesh);
-	drawComponents.operator()<CubeComponent>(m_cubeMesh);
-	drawComponents.operator()<SphereComponent>(m_sphereMesh);
+	drawComponents.operator()<PlaneComponent>(m_planeMesh, { 0.15f, 0.55f, 0.95f, 1.0f });
+	drawComponents.operator()<CubeComponent>(m_cubeMesh, { 1.0f, 1.0f, 1.0f, 1.0f });
+	drawComponents.operator()<SphereComponent>(m_sphereMesh, { 1.0f, 1.0f, 1.0f, 1.0f });
 
 
 	m_graphicsDevice.executeCommandList(context);

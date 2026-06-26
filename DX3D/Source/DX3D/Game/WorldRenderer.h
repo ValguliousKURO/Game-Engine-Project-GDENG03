@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Base.h>
 #include <DX3D/Math/Mat4x4.h>
+#include <DX3D/Math/Vec4.h>
 
 namespace dx3d
 {
@@ -47,6 +48,7 @@ namespace dx3d
 			Mat4x4 world{};
 			Mat4x4 view{};
 			Mat4x4 proj{};
+			Vec4 materialColor{ 1.0f,1.0f,1.0f,1.0f };
 		};
 
 	private:
