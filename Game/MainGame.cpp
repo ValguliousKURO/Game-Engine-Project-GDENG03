@@ -85,44 +85,42 @@ void MainGame::onCreate()
 		m_cards.push_back(card);
 	};
 
-	// BOTTOM LAYER
+	// Bottom layer
 	// Tent 1 (Leftmost): Center X = -1.4f
-	createCard({ -1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 1: Left leg (leans right)
-	createCard({ -1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 2: Right leg (leans left)
+	createCard({ -1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f }); // Card 1: Left leg (leans right)
+	createCard({ -1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.57f, 0.314f });  // Card 2: Right leg (leans left)
 
 	// Tent 2 (Middle): Center X = 0.0f
-	createCard({ -0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 3: Left leg
-	createCard({ 0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 4: Right leg
-
+	createCard({ -0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f }); // Card 3: Left leg
+	createCard({ 0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.57f, 0.314f });  // Card 4: Right leg
 	// Tent 3 (Rightmost): Center X = 1.4f
-	createCard({ 1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 5: Left leg
-	createCard({ 1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 6: Right leg
+	createCard({ 1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.5708f, -0.314f }); // Card 5: Left leg
+	createCard({ 1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.5708f, 0.314f });  // Card 6: Right leg
 
 	// Horizontal Connectors (Bottom layer):
 	createCard({ -0.7f, 1.33f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });       // Card 7: Left flat card
 	createCard({ 0.7f, 1.33f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });        // Card 8: Right flat card
 
-	// MIDDLE LAYER
+	// middle layer
 	// Tent 4 (Left middle): Center X = -0.7f
-	createCard({ -0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f });// Card 9: Left leg
-	createCard({ -0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f }); // Card 10: Right leg
+	createCard({ -0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f });// Card 9: Left leg
+	createCard({ -0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.314f }); // Card 10: Right leg
 
 	// Tent 5 (Right middle): Center X = 0.7f
-	createCard({ 0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 11: Left leg
-	createCard({ 0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 12: Right leg
-
+	createCard({ 0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f }); // Card 11: Left leg
+	createCard({ 0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.314f });  // Card 12: Right leg
 	// Horizontal Connector (Middle layer):
 	createCard({ 0.0f, 2.66f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });        // Card 13: Middle flat card
 
-	// TOP LAYER
+	// TOP layer
 	// Tent 6 (Top): Center X = 0.0f
-	createCard({ -0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f });// Card 14: Left leg
-	createCard({ 0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 15: Right leg
+	createCard({ -0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f });// Card 14: Left leg
+	createCard({ 0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.314f });  // Card 15: Right leg
 
 	// Camera setup - moved far away to remove perspective distortion (making it look isometric like the reference picture)
 	m_player = world.createGameObject<Player>();
-	m_player->getTransform().setPosition({ 18.0f, 20.0f, 22.0f });
-	m_player->getTransform().setRotation({ 0.400f, -2.455f, 0.0f });
+	m_player->getTransform().setPosition({ 5.0f, 10.0f, 12.0f });
+	m_player->getTransform().setRotation({ 0.400f, -2.45f, 0.0f });
 
 	auto camera = m_player->getComponent<dx3d::CameraComponent>();
 	if (camera)
