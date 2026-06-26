@@ -1,26 +1,4 @@
-/*MIT License
 
-C++ 3D Game Tutorial Series (https://github.com/PardCode/CPP-3D-Game-Tutorial-Series)
-
-Copyright (c) 2019-2026, PardCode
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.*/
 
 #include "MainGame.h"
 #include "Objects/Player.h"
@@ -87,15 +65,15 @@ void MainGame::onCreate()
 
 	// Bottom layer
 	// Tent 1 (Leftmost): Center X = -1.4f
-	createCard({ -1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f }); // Card 1: Left leg (leans right)
-	createCard({ -1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.57f, 0.314f });  // Card 2: Right leg (leans left)
+	createCard({ -1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.31f }); // Card 1: Left leg (leans right)
+	createCard({ -1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.57f, 0.31f });  // Card 2: Right leg (leans left)
 
 	// Tent 2 (Middle): Center X = 0.0f
-	createCard({ -0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f }); // Card 3: Left leg
-	createCard({ 0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.57f, 0.314f });  // Card 4: Right leg
+	createCard({ -0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.31f }); // Card 3: Left leg
+	createCard({ 0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.57f, 0.31f });  // Card 4: Right leg
 	// Tent 3 (Rightmost): Center X = 1.4f
-	createCard({ 1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.5708f, -0.314f }); // Card 5: Left leg
-	createCard({ 1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.5708f, 0.314f });  // Card 6: Right leg
+	createCard({ 1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.5708f, -0.31f }); // Card 5: Left leg
+	createCard({ 1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, {0.0f, 1.5708f, 0.31f });  // Card 6: Right leg
 
 	// Horizontal Connectors (Bottom layer):
 	createCard({ -0.7f, 1.33f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });       // Card 7: Left flat card
@@ -103,19 +81,19 @@ void MainGame::onCreate()
 
 	// middle layer
 	// Tent 4 (Left middle): Center X = -0.7f
-	createCard({ -0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f });// Card 9: Left leg
-	createCard({ -0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.314f }); // Card 10: Right leg
+	createCard({ -0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.31f });// Card 9: Left leg
+	createCard({ -0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.31f }); // Card 10: Right leg
 
 	// Tent 5 (Right middle): Center X = 0.7f
-	createCard({ 0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f }); // Card 11: Left leg
-	createCard({ 0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.314f });  // Card 12: Right leg
+	createCard({ 0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.31f }); // Card 11: Left leg
+	createCard({ 0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.31f });  // Card 12: Right leg
 	// Horizontal Connector (Middle layer):
 	createCard({ 0.0f, 2.66f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });        // Card 13: Middle flat card
 
 	// TOP layer
 	// Tent 6 (Top): Center X = 0.0f
-	createCard({ -0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.314f });// Card 14: Left leg
-	createCard({ 0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.314f });  // Card 15: Right leg
+	createCard({ -0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, -0.31f });// Card 14: Left leg
+	createCard({ 0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 1.57f, 0.31f });  // Card 15: Right leg
 
 	// Camera setup - moved far away to remove perspective distortion (making it look isometric like the reference picture)
 	m_player = world.createGameObject<Player>();
