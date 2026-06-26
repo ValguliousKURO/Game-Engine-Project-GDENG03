@@ -24,6 +24,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <DX3D/All.h>
+#include <vector>
 
 
 class MainGame : public dx3d::Game
@@ -37,10 +38,9 @@ protected:
 
 private:
 	dx3d::GameObject* m_player{};
+	dx3d::GameObject* m_cube1{};
+	dx3d::GameObject* m_cube2{};
+	dx3d::GameObject* m_cube3{};
 	dx3d::GameObject* m_plane{};
-	dx3d::GameObject* m_cubeLeft{};
-	dx3d::GameObject* m_cubeRight{};
-	dx3d::GameObject* m_sphere{};
-	dx3d::f32 m_elapsedTime{};
 };
 

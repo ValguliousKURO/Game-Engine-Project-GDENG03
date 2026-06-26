@@ -32,6 +32,7 @@ struct VSOutput
 {
     float4 position : SV_Position;
     float4 color : COLOR0;
+    float3 localPosition : TEXCOORD0;
 };
 
 cbuffer ConstantData : register(b0)
@@ -48,10 +49,13 @@ VSOutput VSMain(VSInput input)
     output.position = mul(output.position, view);
     output.position = mul(output.position, proj);
     output.color = input.color;
+    output.localPosition = input.position;
     return output;
 }
 
 float4 PSMain(VSOutput input) : SV_Target
 {
-    return input.color;
+    float hue = frac((input.localPosition.x + input.localPosition.y + input.localPosition.z) * 0.35f + input.position.x * 0.001f);
+    float3 rgb = saturate(abs(frac(hue + float3(0.0f, 0.6667f, 0.3333f)) * 6.0f - 3.0f) - 1.0f);
+    return float4(rgb, 1.0f);
 }
