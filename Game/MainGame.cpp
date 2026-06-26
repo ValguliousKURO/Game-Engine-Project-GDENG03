@@ -65,61 +65,70 @@ void MainGame::onCreate()
 	//m_player->getTransform().setPosition({ 4.0f, 5.0f, 5.0f });
 	//m_player->getTransform().setRotation({ 0.374f, -2.472f, 0.0f });
 
-	m_warpingCube = world.createGameObject<dx3d::GameObject>();
-	m_warpingCube->createOrGetComponent<dx3d::CubeComponent>();
-	m_warpingCube->getTransform().setPosition({ 0.0f, 0.0f, 0.0f });
-	m_warpingCube->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
-	m_warpingCube->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
+	//m_warpingCube = world.createGameObject<dx3d::GameObject>();
+	//m_warpingCube->createOrGetComponent<dx3d::CubeComponent>();
+	//m_warpingCube->getTransform().setPosition({ 0.0f, 0.0f, 0.0f });
+	//m_warpingCube->getTransform().setScale({ 1.0f, 1.0f, 1.0f });
+	//m_warpingCube->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
 
+	//m_player = world.createGameObject<Player>();
+	//m_player->getTransform().setPosition({ 0.0f, 2.0f, -6.0f });
+	//m_player->getTransform().setRotation({ 0.32f, 0.0f, 0.0f });
+
+	// Stacking Cards
+	auto createCard = [&world, this](const dx3d::Vec3& position, const dx3d::Vec3& scale, const dx3d::Vec3& rotation) {
+		auto card = world.createGameObject<dx3d::GameObject>();
+		card->createOrGetComponent<dx3d::CubeComponent>();
+		card->getTransform().setPosition(position);
+		card->getTransform().setScale(scale);
+		card->getTransform().setRotation(rotation);
+		m_cards.push_back(card);
+	};
+
+	// BOTTOM LAYER
+	// Tent 1 (Leftmost): Center X = -1.4f
+	createCard({ -1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 1: Left leg (leans right)
+	createCard({ -1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 2: Right leg (leans left)
+
+	// Tent 2 (Middle): Center X = 0.0f
+	createCard({ -0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 3: Left leg
+	createCard({ 0.216f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 4: Right leg
+
+	// Tent 3 (Rightmost): Center X = 1.4f
+	createCard({ 1.184f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 5: Left leg
+	createCard({ 1.616f, 0.666f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 6: Right leg
+
+	// Horizontal Connectors (Bottom layer):
+	createCard({ -0.7f, 1.33f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });       // Card 7: Left flat card
+	createCard({ 0.7f, 1.33f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });        // Card 8: Right flat card
+
+	// MIDDLE LAYER
+	// Tent 4 (Left middle): Center X = -0.7f
+	createCard({ -0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f });// Card 9: Left leg
+	createCard({ -0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f }); // Card 10: Right leg
+
+	// Tent 5 (Right middle): Center X = 0.7f
+	createCard({ 0.484f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f }); // Card 11: Left leg
+	createCard({ 0.916f, 1.996f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 12: Right leg
+
+	// Horizontal Connector (Middle layer):
+	createCard({ 0.0f, 2.66f, 0.0f }, { 1.4f, 0.02f, 1.0f }, { 0.0f, 0.0f, 0.0f });        // Card 13: Middle flat card
+
+	// TOP LAYER
+	// Tent 6 (Top): Center X = 0.0f
+	createCard({ -0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, -0.314f });// Card 14: Left leg
+	createCard({ 0.216f, 3.326f, 0.0f }, { 1.0f, 1.4f, 0.02f }, { 0.0f, 0.0f, 0.314f });  // Card 15: Right leg
+
+	// Camera setup - moved far away to remove perspective distortion (making it look isometric like the reference picture)
 	m_player = world.createGameObject<Player>();
-	m_player->getTransform().setPosition({ 0.0f, 2.0f, -6.0f });
-	m_player->getTransform().setRotation({ 0.32f, 0.0f, 0.0f });
+	m_player->getTransform().setPosition({ 18.0f, 20.0f, 22.0f });
+	m_player->getTransform().setRotation({ 0.400f, -2.455f, 0.0f });
 
-
-
-	/*m_plane = world.createGameObject<dx3d::GameObject>();
-	m_plane->createOrGetComponent<dx3d::PlaneComponent>();
-	m_plane->getTransform().setPosition({ 1.0f, -1.5f, 10.0f });
-	m_plane->getTransform().setScale({ 10.0f, 1.0f, 10.0f });
-	
-	m_player = world.createGameObject<Player>();
-	m_player->getTransform().setPosition({ 0.0f, 1.5f, -7.0f });
-	m_player->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });*/
-
-	//std::mt19937 generator(1337); // Seed for reproducible/consistent random positions
-	//std::uniform_real_distribution<float> posXDist(-15.0f, 15.0f);
-	//std::uniform_real_distribution<float> posYDist(-1.0f, 10.0f);
-	//std::uniform_real_distribution<float> posZDist(-5.0f, 25.0f);
-
-	//std::uniform_real_distribution<float> rotDist(0.0f, 6.28f);
-	//std::uniform_real_distribution<float> rotSpeedDist(-1.5f, 1.5f);
-	//std::uniform_real_distribution<float> scaleDist(0.5f, 1.5f);
-
-	//for (int i = 0; i < 50; ++i)
-	//{
-	//	CubeData cube;
-	//	cube.gameObject = world.createGameObject<dx3d::GameObject>();
-	//	cube.gameObject->createOrGetComponent<dx3d::CubeComponent>();
-
-	//	// random transform values
-	//	cube.gameObject->getTransform().setPosition({ posXDist(generator), posYDist(generator), posZDist(generator) });
-	//	cube.gameObject->getTransform().setRotation({ rotDist(generator), rotDist(generator), rotDist(generator) });
-	//	
-	//	float s = scaleDist(generator);
-	//	cube.gameObject->getTransform().setScale({ s, s, s });
-
-	//	// random rotation speeds 
-	//	float rx = rotSpeedDist(generator);
-	//	float ry = rotSpeedDist(generator);
-	//	float rz = rotSpeedDist(generator);
-	//	if (std::abs(rx) < 0.2f) rx = rx < 0 ? -0.2f : 0.2f;
-	//	if (std::abs(ry) < 0.2f) ry = ry < 0 ? -0.2f : 0.2f;
-	//	if (std::abs(rz) < 0.2f) rz = rz < 0 ? -0.2f : 0.2f;
-
-	//	cube.rotationSpeed = { rx, ry, rz };
-
-	//	m_cubes.push_back(cube);
-	//}
+	auto camera = m_player->getComponent<dx3d::CameraComponent>();
+	if (camera)
+	{
+		camera->setFieldOfView(0.275f);
+	}
 
 	getInputSystem().setCursorLocked(true);
 	getInputSystem().setCursorVisible(false);
@@ -132,7 +141,7 @@ void MainGame::onUpdate(dx3d::f32 deltaTime)
 
 	m_elapsedTime += deltaTime;
 
-	if (m_warpingCube)
+	/*if (m_warpingCube)
 	{
 		// t goes between 0.0f (uniform cube) and 1.0f (flat horizontal plane)
 		float t = (std::sin(m_elapsedTime * 1.5f) + 1.0f) * 0.5f;
@@ -147,7 +156,7 @@ void MainGame::onUpdate(dx3d::f32 deltaTime)
 
 		m_warpingCube->getTransform().setScale({ scaleX, scaleY, scaleZ });
 		m_warpingCube->getTransform().setRotation({ rotationX, 0.0f, 0.0f });
-	}
+	}*/
 
 	/*m_elapsedTime += deltaTime;
 
