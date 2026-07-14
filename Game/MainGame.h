@@ -31,8 +31,9 @@ class MainGame : public dx3d::Game
 public:
 	explicit MainGame(const dx3d::GameDesc& desc);
 protected:
-	virtual void onCreate();
-	virtual void onUpdate(dx3d::f32 deltaTime);
+	virtual void onCreate() override;
+	virtual void onUpdate(dx3d::f32 deltaTime) override;
+	virtual void onRenderUI() override;
 
 
 private:
@@ -42,5 +43,10 @@ private:
 	dx3d::GameObject* m_cubeRight{};
 	dx3d::GameObject* m_sphere{};
 	dx3d::f32 m_elapsedTime{};
+
+	dx3d::GameObject* m_selectedObject{};
+	bool m_showCredits{ true };
+	bool m_showHierarchy{ true };
+	bool m_showInspector{ true };
 };
 

@@ -43,6 +43,7 @@ namespace dx3d
 	protected:
 		virtual void onCreate() {}
 		virtual void onUpdate(f32 deltaTime) {}
+		virtual void onRenderUI() {}
 	private:
 		void onInternalUpdate();
 	private:

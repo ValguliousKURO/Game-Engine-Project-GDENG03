@@ -47,6 +47,9 @@ namespace dx3d
 		RefPtr<IndexBuffer> createIndexBuffer(const IndexBufferDesc& desc);
 
 		void executeCommandList(DeviceContext& context);
+
+		ID3D11Device* getD3DDevice() const noexcept { return m_d3dDevice.Get(); }
+		ID3D11DeviceContext* getD3DDeviceContext() const noexcept { return m_d3dContext.Get(); }
 	private:
 		GraphicsResourceDesc getGraphicsResourceDesc() const noexcept;
 	private:

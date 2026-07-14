@@ -32,6 +32,10 @@ SOFTWARE.*/
 #include <DX3D/Game/GameObject.h>
 #include <DX3D/Game/WorldRenderer.h>
 
+#include <imgui.h>
+#include <backends/imgui_impl_win32.h>
+#include <backends/imgui_impl_dx11.h>
+#include <Windows.h>
 
 
 dx3d::Game::Game(const GameDesc& desc)
@@ -49,11 +53,29 @@ dx3d::Game::Game(const GameDesc& desc)
 
 	m_inputSystem->setCursorLockArea(m_display->getClientAreaInScreenSpace());
 
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+
+	// Setup Platform/Renderer backends
+	ImGui_ImplWin32_Init(static_cast<HWND>(m_display->getHandle()));
+	ImGui_ImplDX11_Init(m_graphicsDevice->getD3DDevice(), m_graphicsDevice->getD3DDeviceContext());
+
 	DX3DLogInfo("Game initialized.");
 }
 
 dx3d::Game::~Game()
 {
+	ImGui_ImplDX11_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
 	DX3DLogInfo("Game is shutting down...");
 }
 
@@ -85,5 +107,14 @@ void dx3d::Game::onInternalUpdate()
 
 	m_world->update(deltaTime);
 
+	// Start the Dear ImGui frame
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// Draw user interface
+	onRenderUI();
+
+	// Render scene
 	m_worldRenderer->render(*m_world, m_display->getSwapChain(), deltaTime);
 }

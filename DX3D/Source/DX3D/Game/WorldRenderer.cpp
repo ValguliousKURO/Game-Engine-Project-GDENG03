@@ -29,6 +29,9 @@ SOFTWARE.*/
 #include <DX3D/Graphics/VertexBuffer.h>
 #include <DX3D/Graphics/IndexBuffer.h>
 
+#include <imgui.h>
+#include <backends/imgui_impl_dx11.h>
+
 #include <DX3D/Game/World.h>
 #include <DX3D/Game/Component.h>
 #include <DX3D/Game/GameObject.h>
@@ -142,5 +145,14 @@ void dx3d::WorldRenderer::render(const World& world, SwapChain& swapChain, f32 d
 
 
 	m_graphicsDevice.executeCommandList(context);
+
+	// Ensure the back buffer is set as the active render target on the immediate context
+	auto rtv = swapChain.getRenderTargetView();
+	m_graphicsDevice.getD3DDeviceContext()->OMSetRenderTargets(1, &rtv, nullptr);
+
+	// Draw ImGui onto the back buffer (using immediate context)
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
 	swapChain.present();
 }

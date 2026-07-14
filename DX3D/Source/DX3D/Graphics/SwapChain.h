@@ -11,6 +11,7 @@ namespace dx3d
 		Rect getSize() const noexcept;
 
 		void present(bool vsync = false);
+		ID3D11RenderTargetView* getRenderTargetView() const noexcept { return m_rtv.Get(); }
 	private:
 		void reloadBuffers();
 	private:

@@ -1,5 +1,6 @@
 #include "Player.h"
 #include <Windows.h>
+#include <imgui.h>
 
 namespace
 {
@@ -15,6 +16,9 @@ namespace
 
 		virtual void execute(dx3d::f32 deltaTime) override
 		{
+			if (ImGui::GetIO().WantCaptureKeyboard)
+				return;
+
 			auto& transform = m_player.getTransform();
 			auto movement = transform.forward() * m_direction.z +
 				transform.right() * m_direction.x;
@@ -44,6 +48,9 @@ namespace
 
 		virtual void execute(dx3d::f32) override
 		{
+			if (ImGui::GetIO().WantCaptureMouse)
+				return;
+
 			auto& input = m_player.getInputSystem();
 			if (!input.isCursorLocked())
 				return;
