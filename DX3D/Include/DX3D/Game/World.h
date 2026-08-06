@@ -26,16 +26,27 @@ SOFTWARE.*/
 #include <DX3D/Core/Common.h>
 #include <DX3D/Core/Base.h>
 #include <DX3D/Core/Identifiable.h>
+#include <DX3D/Math/Vec3.h>
 #include <unordered_map>
 #include <vector>
 
+namespace reactphysics3d
+{
+	class PhysicsCommon;
+	class PhysicsWorld;
+	class BoxShape;
+	class RigidBody;
+}
 
 namespace dx3d
 {
+	class RigidBodyComponent;
+
 	class World final : public Base
 	{
 	public:
 		explicit World(const WorldDesc& desc);
+		virtual ~World() override;
 
 		template <typename T>
 		T* createGameObject() requires IsRegistered<GameObject, T>
@@ -55,10 +66,16 @@ namespace dx3d
 		}
 
 		void update(f32 deltaTime);
+		void setPhysicsEnabled(bool enabled) noexcept;
+		bool isPhysicsEnabled() const noexcept;
+		reactphysics3d::RigidBody* createPhysicsBox(RigidBodyComponent& component, const Vec3& halfExtents, bool isStatic,
+			f32 mass, f32 bounciness, f32 friction);
 	private:
 		GameObject* createGameObjectInternal(UniquePtr<GameObject>& object);
 		void addComponentInternal(Component& component);
 		void addDirtyTransformInternal(TransformComponent& component);
+		void stepPhysics(f32 deltaTime);
+		void syncPhysicsTransforms();
 
 		Component* const* getComponentsInternal(size_t typeId, ui32* numComponents) const noexcept;
 	private:
@@ -87,6 +104,11 @@ namespace dx3d
 		std::vector<GameObjectEvent> m_events{};
 		std::vector<GameObjectEvent> m_eventsSwapBuffer{};
 
+		UniquePtr<reactphysics3d::PhysicsCommon> m_physicsCommon{};
+		reactphysics3d::PhysicsWorld* m_physicsWorld{};
+		std::vector<reactphysics3d::BoxShape*> m_physicsBoxShapes{};
+		f32 m_physicsAccumulator{};
+		bool m_physicsEnabled{ false };
 
 		friend class GameObject;
 		friend class TransformComponent;

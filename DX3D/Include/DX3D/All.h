@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <DX3D/Component/PlaneComponent.h>
 #include <DX3D/Component/CameraComponent.h>
 #include <DX3D/Component/ModelComponent.h>
+#include <DX3D/Component/RigidBodyComponent.h>
 
 #include <DX3D/Game/GameObject.h>
 #include <DX3D/Game/World.h>

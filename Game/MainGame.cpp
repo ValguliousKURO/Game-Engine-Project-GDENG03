@@ -85,36 +85,16 @@ void MainGame::onCreate()
 
 	m_plane = world.createGameObject<dx3d::GameObject>();
 	m_plane->createOrGetComponent<dx3d::PlaneComponent>();
-	m_plane->getTransform().setScale({ 14.0f, 1.0f, 14.0f });
+	m_plane->getTransform().setScale({ 16.0f, 1.0f, 16.0f });
 	m_plane->getTransform().setPosition({ 0.0f, -1.0f, 0.0f });
+	m_plane->createOrGetComponent<dx3d::RigidBodyComponent>()->configureBox({ 8.0f, 0.15f, 8.0f }, true, 0.0f, 0.25f, 0.85f);
 
 	/*m_cubeLeft = world.createGameObject<dx3d::GameObject>();
 	m_cubeLeft->createOrGetComponent<dx3d::CubeComponent>();
 	m_cubeLeft->getTransform().setScale({ 1.0f, 2.0f, 1.0f });
 	m_cubeLeft->getTransform().setPosition({ -3.0f, 0.0f, 4.0f });*/
 
-	m_teapot = world.createGameObject<dx3d::GameObject>();
-	auto teapotModel = m_teapot->createOrGetComponent<dx3d::ModelComponent>();
-	teapotModel->setModelType(dx3d::ModelType::Teapot);
-	m_teapot->getTransform().setScale({ 2.1f, 2.1f, 2.1f });
-	m_teapot->getTransform().setPosition({ -4.0f, 0.15f, 6.0f });
-	m_teapot->getTransform().setRotation({ 0.0f, 0.8f, 0.0f });
-
-	m_bunny = world.createGameObject<dx3d::GameObject>();
-	auto bunnyModel = m_bunny->createOrGetComponent<dx3d::ModelComponent>();
-	bunnyModel->setModelType(dx3d::ModelType::Bunny);
-	bunnyModel->setTint({ 0.75f, 0.82f, 0.92f, 1.0f });
-	m_bunny->getTransform().setScale({ 2.8f, 2.8f, 2.8f });
-	m_bunny->getTransform().setPosition({ 0.0f, 0.05f, 6.0f });
-	m_bunny->getTransform().setRotation({ 0.0f, -0.4f, 0.0f });
-
-	m_armadillo = world.createGameObject<dx3d::GameObject>();
-	auto armadilloModel = m_armadillo->createOrGetComponent<dx3d::ModelComponent>();
-	armadilloModel->setModelType(dx3d::ModelType::Armadillo);
-	armadilloModel->setTint({ 0.88f, 0.72f, 0.52f, 1.0f });
-	m_armadillo->getTransform().setScale({ 2.6f, 2.6f, 2.6f });
-	m_armadillo->getTransform().setPosition({ 4.0f, 0.1f, 6.0f });
-	m_armadillo->getTransform().setRotation({ 0.0f, -0.9f, 0.0f });
+	createPhysicsCubeStack(world);
 
 	/*m_sphere = world.createGameObject<dx3d::GameObject>();
 	m_sphere->createOrGetComponent<dx3d::SphereComponent>();
@@ -122,8 +102,8 @@ void MainGame::onCreate()
 	m_sphere->getTransform().setPosition({ 0.0f, 1.0f, 7.5f });*/
 
 	m_player = world.createGameObject<Player>();
-	m_player->getTransform().setPosition({ 0.0f, 1.5f, -7.0f });
-	m_player->getTransform().setRotation({ 0.0f, 0.0f, 0.0f });
+	m_player->getTransform().setPosition({ 0.0f, 3.2f, -10.0f });
+	m_player->getTransform().setRotation({ 0.22f, 0.0f, 0.0f });
 
 	getInputSystem().setCursorLocked(true);
 	getInputSystem().setCursorVisible(false);
@@ -133,6 +113,90 @@ void MainGame::onCreate()
 	if (!m_logoLoaded)
 	{
 		m_logoLoaded = LoadTextureFromFile("dlsu_logo.png", getGraphicsDevice().getD3DDevice(), &m_logoTextureSRV, &m_logoWidth, &m_logoHeight);
+	}
+}
+
+void MainGame::createPhysicsCubeStack(dx3d::World& world)
+{
+	constexpr auto cubeCount = 24;
+	const dx3d::Vec3 cubeScale{ 0.65f, 0.65f, 0.65f };
+	const dx3d::Vec3 halfExtents{ cubeScale.x * 0.5f, cubeScale.y * 0.5f, cubeScale.z * 0.5f };
+
+	m_physicsCubes.reserve(cubeCount);
+	m_cubeSpawnTransforms.reserve(cubeCount);
+	for (auto i = 0; i < cubeCount; ++i)
+	{
+		auto cube = world.createGameObject<dx3d::GameObject>();
+		cube->createOrGetComponent<dx3d::CubeComponent>();
+		cube->getTransform().setScale(cubeScale);
+
+		const auto column = i % 6;
+		const auto row = (i / 6) % 4;
+		const auto layer = i / 8;
+		const auto x = -2.0f + (static_cast<dx3d::f32>(column) * 0.8f);
+		const auto z = 4.0f + (static_cast<dx3d::f32>(row) * 0.8f);
+		const auto y = 5.0f + (static_cast<dx3d::f32>(layer) * 0.85f) + (static_cast<dx3d::f32>(column % 2) * 0.25f);
+
+		CubeSpawnTransform spawnTransform{};
+		spawnTransform.position = { x, y, z };
+		spawnTransform.rotation = {
+			0.15f * static_cast<dx3d::f32>(i % 5),
+			0.23f * static_cast<dx3d::f32>(i % 7),
+			0.31f * static_cast<dx3d::f32>(i % 3)
+		};
+
+		cube->getTransform().setPosition(spawnTransform.position);
+		cube->getTransform().setRotation(spawnTransform.rotation);
+		cube->createOrGetComponent<dx3d::RigidBodyComponent>()->configureBox(halfExtents, false, 1.0f, 0.28f, 0.7f);
+		m_physicsCubes.push_back(cube);
+		m_cubeSpawnTransforms.push_back(spawnTransform);
+	}
+}
+
+void MainGame::resetPhysicsScene()
+{
+	setPlayMode(false);
+
+	for (auto i = 0u; i < m_physicsCubes.size() && i < m_cubeSpawnTransforms.size(); ++i)
+	{
+		auto cube = m_physicsCubes[i];
+		const auto& spawnTransform = m_cubeSpawnTransforms[i];
+
+		cube->getTransform().setPosition(spawnTransform.position);
+		cube->getTransform().setRotation(spawnTransform.rotation);
+
+		if (auto rigidBody = cube->getComponent<dx3d::RigidBodyComponent>())
+		{
+			rigidBody->resetTransform(spawnTransform.position, spawnTransform.rotation);
+		}
+	}
+
+	m_selectedObject = {};
+}
+
+void MainGame::setPlayMode(bool isPlaying)
+{
+	if (m_isPlaying == isPlaying)
+		return;
+
+	m_isPlaying = isPlaying;
+	if (m_isPlaying)
+	{
+		syncPhysicsBodiesFromScene();
+	}
+	getWorld().setPhysicsEnabled(m_isPlaying);
+}
+
+void MainGame::syncPhysicsBodiesFromScene()
+{
+	for (auto cube : m_physicsCubes)
+	{
+		auto rigidBody = cube->getComponent<dx3d::RigidBodyComponent>();
+		if (!rigidBody)
+			continue;
+
+		auto& transform = cube->getTransform();
+		rigidBody->resetTransform(transform.getPosition(), transform.getRotation());
 	}
 }
 
@@ -231,6 +295,17 @@ void MainGame::onRenderUI()
 	if (m_showHierarchy)
 	{
 		ImGui::Begin("Scene Hierarchy", &m_showHierarchy);
+		if (ImGui::Button(m_isPlaying ? "Edit Mode" : "Play Mode"))
+		{
+			setPlayMode(!m_isPlaying);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Reset Physics Scene"))
+		{
+			resetPhysicsScene();
+		}
+		ImGui::Text("Mode: %s", m_isPlaying ? "Play" : "Edit");
+		ImGui::Separator();
 		
 		auto drawSelectable = [this](const char* label, dx3d::GameObject* obj) {
 			bool selected = (m_selectedObject == obj);
@@ -241,9 +316,12 @@ void MainGame::onRenderUI()
 		};
 
 		drawSelectable("Grid/Plane", m_plane);
-		drawSelectable("Utah Teapot (Brick Texture)", m_teapot);
-		drawSelectable("Stanford Bunny", m_bunny);
-		drawSelectable("Armadillo", m_armadillo);
+		for (auto i = 0u; i < m_physicsCubes.size(); ++i)
+		{
+			char label[32]{};
+			sprintf_s(label, "Physics Cube (%u)", i + 1u);
+			drawSelectable(label, m_physicsCubes[i]);
+		}
 		drawSelectable("Player / Main Camera", m_player);
 
 		ImGui::End();
@@ -258,10 +336,20 @@ void MainGame::onRenderUI()
 			// Show name based on object type
 			const char* name = "Unknown GameObject";
 			if (m_selectedObject == m_plane) name = "Grid/Plane";
-			else if (m_selectedObject == m_teapot) name = "Utah Teapot (Brick Texture)";
-			else if (m_selectedObject == m_bunny) name = "Stanford Bunny";
-			else if (m_selectedObject == m_armadillo) name = "Armadillo";
 			else if (m_selectedObject == m_player) name = "Player / Main Camera";
+			else
+			{
+				for (auto i = 0u; i < m_physicsCubes.size(); ++i)
+				{
+					if (m_selectedObject == m_physicsCubes[i])
+					{
+						static char cubeName[32]{};
+						sprintf_s(cubeName, "Physics Cube (%u)", i + 1u);
+						name = cubeName;
+						break;
+					}
+				}
+			}
 
 			ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.4f, 1.0f), "Name: %s", name);
 			ImGui::Separator();

@@ -24,6 +24,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <DX3D/All.h>
+#include <vector>
 
 struct ID3D11ShaderResourceView;
 
@@ -39,6 +40,17 @@ protected:
 
 
 private:
+	void createPhysicsCubeStack(dx3d::World& world);
+	void resetPhysicsScene();
+	void setPlayMode(bool isPlaying);
+	void syncPhysicsBodiesFromScene();
+
+	struct CubeSpawnTransform
+	{
+		dx3d::Vec3 position{};
+		dx3d::Vec3 rotation{};
+	};
+
 	dx3d::GameObject* m_player{};
 	dx3d::GameObject* m_plane{};
 	dx3d::GameObject* m_cubeLeft{};
@@ -47,6 +59,8 @@ private:
 	dx3d::GameObject* m_teapot{};
 	dx3d::GameObject* m_bunny{};
 	dx3d::GameObject* m_armadillo{};
+	std::vector<dx3d::GameObject*> m_physicsCubes{};
+	std::vector<CubeSpawnTransform> m_cubeSpawnTransforms{};
 	dx3d::f32 m_elapsedTime{};
 
 	dx3d::GameObject* m_selectedObject{};
@@ -54,6 +68,7 @@ private:
 	bool m_showHierarchy{ true };
 	bool m_showInspector{ true };
 	bool m_showColorPicker{ false };
+	bool m_isPlaying{ false };
 
 	ID3D11ShaderResourceView* m_logoTextureSRV{};
 	int m_logoWidth{ 0 };
