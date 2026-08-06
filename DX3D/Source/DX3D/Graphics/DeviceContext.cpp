@@ -83,6 +83,16 @@ void dx3d::DeviceContext::setConstantBuffer(const ConstantBuffer& buffer)
 	m_context->PSSetConstantBuffers(0, 1, &buf);
 }
 
+void dx3d::DeviceContext::setTexture(ID3D11ShaderResourceView* texture)
+{
+	m_context->PSSetShaderResources(0, 1, &texture);
+}
+
+void dx3d::DeviceContext::setSampler(ID3D11SamplerState* sampler)
+{
+	m_context->PSSetSamplers(0, 1, &sampler);
+}
+
 void dx3d::DeviceContext::updateConstantBuffer(const ConstantBuffer& buffer, const void* data)
 {
 	if (!data) 

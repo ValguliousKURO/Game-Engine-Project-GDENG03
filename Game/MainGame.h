@@ -25,11 +25,13 @@ SOFTWARE.*/
 #pragma once
 #include <DX3D/All.h>
 
+struct ID3D11ShaderResourceView;
 
 class MainGame : public dx3d::Game
 {
 public:
 	explicit MainGame(const dx3d::GameDesc& desc);
+	virtual ~MainGame() override;
 protected:
 	virtual void onCreate() override;
 	virtual void onUpdate(dx3d::f32 deltaTime) override;
@@ -42,11 +44,20 @@ private:
 	dx3d::GameObject* m_cubeLeft{};
 	dx3d::GameObject* m_cubeRight{};
 	dx3d::GameObject* m_sphere{};
+	dx3d::GameObject* m_teapot{};
+	dx3d::GameObject* m_bunny{};
+	dx3d::GameObject* m_armadillo{};
 	dx3d::f32 m_elapsedTime{};
 
 	dx3d::GameObject* m_selectedObject{};
 	bool m_showCredits{ true };
 	bool m_showHierarchy{ true };
 	bool m_showInspector{ true };
+	bool m_showColorPicker{ false };
+
+	ID3D11ShaderResourceView* m_logoTextureSRV{};
+	int m_logoWidth{ 0 };
+	int m_logoHeight{ 0 };
+	bool m_logoLoaded{ false };
 };
 

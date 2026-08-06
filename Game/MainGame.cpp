@@ -1,13 +1,81 @@
-
 #include "MainGame.h"
 #include "Objects/Player.h"
 #include <cmath>
 #include <imgui.h>
 #include <Windows.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#include <d3d11.h>
+#include <DX3D/Graphics/GraphicsDevice.h>
 
 
 MainGame::MainGame(const dx3d::GameDesc& desc) : dx3d::Game(desc)
 {
+}
+
+// Simple helper function to load a Win32/DirectX11 texture from a file using stb_image
+bool LoadTextureFromFile(const char* filename, ID3D11Device* d3dDevice, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
+{
+	// Load from disk into a raw RGBA buffer
+	int image_width = 0;
+	int image_height = 0;
+	unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
+	if (image_data == NULL)
+		return false;
+
+	// Create texture
+	D3D11_TEXTURE2D_DESC desc;
+	ZeroMemory(&desc, sizeof(desc));
+	desc.Width = image_width;
+	desc.Height = image_height;
+	desc.MipLevels = 1;
+	desc.ArraySize = 1;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.SampleDesc.Count = 1;
+	desc.Usage = D3D11_USAGE_DEFAULT;
+	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	desc.CPUAccessFlags = 0;
+
+	ID3D11Texture2D* pTexture = NULL;
+	D3D11_SUBRESOURCE_DATA subResource;
+	subResource.pSysMem = image_data;
+	subResource.SysMemPitch = desc.Width * 4;
+	subResource.SysMemSlicePitch = 0;
+	HRESULT hr = d3dDevice->CreateTexture2D(&desc, &subResource, &pTexture);
+	if (FAILED(hr))
+	{
+		stbi_image_free(image_data);
+		return false;
+	}
+
+	// Create Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
+	ZeroMemory(&srvDesc, sizeof(srvDesc));
+	srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MipLevels = desc.MipLevels;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	hr = d3dDevice->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
+	pTexture->Release();
+
+	stbi_image_free(image_data);
+
+	if (FAILED(hr))
+		return false;
+
+	*out_width = image_width;
+	*out_height = image_height;
+
+	return true;
+}
+
+MainGame::~MainGame()
+{
+	if (m_logoTextureSRV)
+	{
+		m_logoTextureSRV->Release();
+		m_logoTextureSRV = nullptr;
+	}
 }
 
 void MainGame::onCreate()
@@ -25,11 +93,28 @@ void MainGame::onCreate()
 	m_cubeLeft->getTransform().setScale({ 1.0f, 2.0f, 1.0f });
 	m_cubeLeft->getTransform().setPosition({ -3.0f, 0.0f, 4.0f });*/
 
-	m_cubeRight = world.createGameObject<dx3d::GameObject>();
-	m_cubeRight->createOrGetComponent<dx3d::CubeComponent>();
-	m_cubeRight->getTransform().setScale({ 1.5f, 1.5f, 1.5f });
-	m_cubeRight->getTransform().setPosition({ 3.0f, -0.25f, 6.0f });
-	m_cubeRight->getTransform().setRotation({ 0.0f, 0.7f, 0.0f });
+	m_teapot = world.createGameObject<dx3d::GameObject>();
+	auto teapotModel = m_teapot->createOrGetComponent<dx3d::ModelComponent>();
+	teapotModel->setModelType(dx3d::ModelType::Teapot);
+	m_teapot->getTransform().setScale({ 2.1f, 2.1f, 2.1f });
+	m_teapot->getTransform().setPosition({ -4.0f, 0.15f, 6.0f });
+	m_teapot->getTransform().setRotation({ 0.0f, 0.8f, 0.0f });
+
+	m_bunny = world.createGameObject<dx3d::GameObject>();
+	auto bunnyModel = m_bunny->createOrGetComponent<dx3d::ModelComponent>();
+	bunnyModel->setModelType(dx3d::ModelType::Bunny);
+	bunnyModel->setTint({ 0.75f, 0.82f, 0.92f, 1.0f });
+	m_bunny->getTransform().setScale({ 2.8f, 2.8f, 2.8f });
+	m_bunny->getTransform().setPosition({ 0.0f, 0.05f, 6.0f });
+	m_bunny->getTransform().setRotation({ 0.0f, -0.4f, 0.0f });
+
+	m_armadillo = world.createGameObject<dx3d::GameObject>();
+	auto armadilloModel = m_armadillo->createOrGetComponent<dx3d::ModelComponent>();
+	armadilloModel->setModelType(dx3d::ModelType::Armadillo);
+	armadilloModel->setTint({ 0.88f, 0.72f, 0.52f, 1.0f });
+	m_armadillo->getTransform().setScale({ 2.6f, 2.6f, 2.6f });
+	m_armadillo->getTransform().setPosition({ 4.0f, 0.1f, 6.0f });
+	m_armadillo->getTransform().setRotation({ 0.0f, -0.9f, 0.0f });
 
 	/*m_sphere = world.createGameObject<dx3d::GameObject>();
 	m_sphere->createOrGetComponent<dx3d::SphereComponent>();
@@ -42,6 +127,13 @@ void MainGame::onCreate()
 
 	getInputSystem().setCursorLocked(true);
 	getInputSystem().setCursorVisible(false);
+
+	// Load the logo texture
+	m_logoLoaded = LoadTextureFromFile("logo.png", getGraphicsDevice().getD3DDevice(), &m_logoTextureSRV, &m_logoWidth, &m_logoHeight);
+	if (!m_logoLoaded)
+	{
+		m_logoLoaded = LoadTextureFromFile("dlsu_logo.png", getGraphicsDevice().getD3DDevice(), &m_logoTextureSRV, &m_logoWidth, &m_logoHeight);
+	}
 }
 
 
@@ -85,23 +177,51 @@ void MainGame::onRenderUI()
 		{
 			ImGui::MenuItem("Scene Hierarchy", nullptr, &m_showHierarchy);
 			ImGui::MenuItem("Inspector", nullptr, &m_showInspector);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Tools"))
+		{
+			ImGui::MenuItem("Color Picker", nullptr, &m_showColorPicker);
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("About"))
+		{
 			ImGui::MenuItem("Credits", nullptr, &m_showCredits);
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
 	}
 
-	// 2. Credits Window (Formatted exactly like your reference image)
+	// 2. Credits Window 
 	if (m_showCredits)
 	{
 		ImGui::Begin("Credits", &m_showCredits, ImGuiWindowFlags_AlwaysAutoResize);
 		
+		if (m_logoLoaded && m_logoTextureSRV)
+		{
+			// Render the loaded logo image scaled to 150x150
+			ImGui::Image((void*)m_logoTextureSRV, ImVec2(150, 150));
+		}
+		else
+		{
+			// Fallback placeholder with helpful instruction
+			ImGui::TextColored(ImVec4(1.0f, 0.5f, 0.5f, 1.0f), "[Logo Image Missing]");
+			ImGui::Text("Place 'logo.png' or 'dlsu_logo.png'");
+			ImGui::Text("in the project root directory.");
+		}
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+		
 		if (ImGui::CollapsingHeader("About", ImGuiTreeNodeFlags_DefaultOpen))
 		{
 			ImGui::Text("Zero Systems Engine");
-			ImGui::Text("By Arvin Dacanay");
-			ImGui::Text("Conversation is the cornerstone to evolution.");
-			ImGui::Text("IDK what to put here...");
+			ImGui::Text("Developed by: Arvin Dacanay");
+			ImGui::Spacing();
+			ImGui::Text("Acknowledgements:");
+			ImGui::BulletText("PardCode Game Engine Tutorial");
+			ImGui::BulletText("GDENG03 Course");
 		}
 		
 		ImGui::End();
@@ -121,7 +241,9 @@ void MainGame::onRenderUI()
 		};
 
 		drawSelectable("Grid/Plane", m_plane);
-		drawSelectable("Cube (Right)", m_cubeRight);
+		drawSelectable("Utah Teapot (Brick Texture)", m_teapot);
+		drawSelectable("Stanford Bunny", m_bunny);
+		drawSelectable("Armadillo", m_armadillo);
 		drawSelectable("Player / Main Camera", m_player);
 
 		ImGui::End();
@@ -136,7 +258,9 @@ void MainGame::onRenderUI()
 			// Show name based on object type
 			const char* name = "Unknown GameObject";
 			if (m_selectedObject == m_plane) name = "Grid/Plane";
-			else if (m_selectedObject == m_cubeRight) name = "Cube (Right)";
+			else if (m_selectedObject == m_teapot) name = "Utah Teapot (Brick Texture)";
+			else if (m_selectedObject == m_bunny) name = "Stanford Bunny";
+			else if (m_selectedObject == m_armadillo) name = "Armadillo";
 			else if (m_selectedObject == m_player) name = "Player / Main Camera";
 
 			ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.4f, 1.0f), "Name: %s", name);
@@ -177,6 +301,15 @@ void MainGame::onRenderUI()
 		{
 			ImGui::Text("Select a GameObject from the Scene Hierarchy to inspect its properties.");
 		}
+		ImGui::End();
+	}
+
+	// 5. Color Picker Window (Placeholder with Hue Wheel)
+	if (m_showColorPicker)
+	{
+		ImGui::Begin("Color Picker Screen", &m_showColorPicker, ImGuiWindowFlags_AlwaysAutoResize);
+		static float color[3] = { 0.5f, 0.8f, 0.6f };
+		ImGui::ColorPicker3("Color", color, ImGuiColorEditFlags_PickerHueWheel);
 		ImGui::End();
 	}
 }

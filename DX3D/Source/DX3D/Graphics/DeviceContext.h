@@ -38,6 +38,8 @@ namespace dx3d
 		void setIndexBuffer(const IndexBuffer& buffer);
 		void setViewportSize(const Rect& size);
 		void setConstantBuffer(const ConstantBuffer& buffer);
+		void setTexture(ID3D11ShaderResourceView* texture);
+		void setSampler(ID3D11SamplerState* sampler);
 		void updateConstantBuffer(const ConstantBuffer& buffer, const void* data);
 		void drawTriangleList(ui32 vertexCount, ui32 startVertexLocation);
 		void drawIndexedTriangleList(ui32 indexCount, ui32 startVertexIndex, ui32 startIndexLocation);

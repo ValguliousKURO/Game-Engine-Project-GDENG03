@@ -94,6 +94,11 @@ dx3d::InputSystem& dx3d::Game::getInputSystem() noexcept
 	return *m_inputSystem;
 }
 
+dx3d::GraphicsDevice& dx3d::Game::getGraphicsDevice() noexcept
+{
+	return *m_graphicsDevice;
+}
+
 void dx3d::Game::onInternalUpdate()
 {
 	auto currentTime = std::chrono::steady_clock::now();

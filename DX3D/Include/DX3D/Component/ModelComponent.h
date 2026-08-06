@@ -22,34 +22,34 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <DX3D/Component/CubeComponent.h>
-#include <DX3D/Game/World.h>
+#pragma once
+#include <DX3D/Core/Core.h>
+#include <DX3D/Game/Component.h>
+#include <DX3D/Math/Vec4.h>
 
-dx3d::CubeComponent::CubeComponent(const ComponentDesc& data) : Component(data)
+namespace dx3d
 {
-}
+	enum class ModelType
+	{
+		Teapot,
+		Bunny,
+		Armadillo
+	};
 
-dx3d::PrimitiveMeshData dx3d::CubeComponent::createMeshData()
-{
-	return {
-		{
-			{{-0.5f,-0.5f,-0.5f}, {1.0f,0.1f,0.1f,1.0f}, {0.0f,1.0f}},
-			{{-0.5f,0.5f,-0.5f}, {0.1f,0.8f,0.2f,1.0f}, {0.0f,0.0f}},
-			{{0.5f,0.5f,-0.5f}, {0.1f,0.3f,1.0f,1.0f}, {1.0f,0.0f}},
-			{{0.5f,-0.5f,-0.5f}, {1.0f,0.9f,0.1f,1.0f}, {1.0f,1.0f}},
+	class ModelComponent final : public Component
+	{
+		dx3d_typeid(ModelComponent)
+	public:
+		explicit ModelComponent(const ComponentDesc& data);
 
-			{{0.5f,-0.5f,0.5f}, {1.0f,0.4f,0.1f,1.0f}, {0.0f,1.0f}},
-			{{0.5f,0.5f,0.5f}, {0.2f,0.9f,1.0f,1.0f}, {0.0f,0.0f}},
-			{{-0.5f,0.5f,0.5f}, {0.8f,0.2f,1.0f,1.0f}, {1.0f,0.0f}},
-			{{-0.5f,-0.5f,0.5f}, {0.9f,0.9f,0.9f,1.0f}, {1.0f,1.0f}}
-		},
-		{
-			0,1,2, 2,3,0,
-			4,5,6, 6,7,4,
-			1,6,5, 5,2,1,
-			7,0,3, 3,4,7,
-			3,2,5, 5,4,3,
-			7,6,1, 1,0,7
-		}
+		void setModelType(ModelType type) noexcept;
+		ModelType getModelType() const noexcept;
+
+		void setTint(const Vec4& tint) noexcept;
+		const Vec4& getTint() const noexcept;
+
+	private:
+		ModelType m_type{ ModelType::Teapot };
+		Vec4 m_tint{ 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 }

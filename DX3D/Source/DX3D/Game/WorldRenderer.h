@@ -26,6 +26,9 @@ SOFTWARE.*/
 #include <DX3D/Core/Core.h>
 #include <DX3D/Core/Base.h>
 #include <DX3D/Math/Mat4x4.h>
+#include <DX3D/Math/Vec4.h>
+#include <d3d11.h>
+#include <wrl/client.h>
 
 namespace dx3d
 {
@@ -47,6 +50,9 @@ namespace dx3d
 			Mat4x4 world{};
 			Mat4x4 view{};
 			Mat4x4 proj{};
+			Vec4 tint{ 1.0f, 1.0f, 1.0f, 1.0f };
+			f32 useTexture{};
+			f32 padding[3]{};
 		};
 
 	private:
@@ -57,6 +63,11 @@ namespace dx3d
 		Mesh m_cubeMesh{};
 		Mesh m_planeMesh{};
 		Mesh m_sphereMesh{};
+		Mesh m_teapotMesh{};
+		Mesh m_bunnyMesh{};
+		Mesh m_armadilloMesh{};
+		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_brickTexture{};
+		Microsoft::WRL::ComPtr<ID3D11SamplerState> m_sampler{};
 	};
 }
 

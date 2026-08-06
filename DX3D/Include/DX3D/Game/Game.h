@@ -39,6 +39,7 @@ namespace dx3d
 		virtual World& getWorld() noexcept final;
 		virtual Logger& getLogger() noexcept final;
 		virtual InputSystem& getInputSystem() noexcept final;
+		virtual GraphicsDevice& getGraphicsDevice() noexcept final;
 		virtual void run() final;
 	protected:
 		virtual void onCreate() {}

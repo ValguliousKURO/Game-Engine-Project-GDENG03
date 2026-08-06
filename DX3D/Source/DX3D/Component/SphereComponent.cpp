@@ -29,7 +29,8 @@ dx3d::PrimitiveMeshData dx3d::SphereComponent::createMeshData()
 
             data.vertices.push_back({
                 {x, y, z},
-                {0.35f + (0.55f * u), 0.45f + (0.35f * v), 1.0f - (0.45f * v), 1.0f}
+                {0.35f + (0.55f * u), 0.45f + (0.35f * v), 1.0f - (0.45f * v), 1.0f},
+                {u, v}
             });
         }
     }
